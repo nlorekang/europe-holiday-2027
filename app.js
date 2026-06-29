@@ -184,7 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initMap();
   renderItineraryTimeline();
   renderBookingCalendar();
+  if (typeof renderDiningSection === 'function') {
   renderDiningSection();
+} else {
+  console.log("Dining section function not found, skipping crash.");
+}
   renderExpenseSplitter();
   initBackgroundSlideshow();
   initLandingCountdown();
