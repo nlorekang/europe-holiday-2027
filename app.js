@@ -191,7 +191,11 @@ document.addEventListener("DOMContentLoaded", () => {
 }
   renderExpenseSplitter();
   initBackgroundSlideshow();
+  if (typeof initLandingCountdown === 'function') {
   initLandingCountdown();
+} else {
+  console.log("Countdown function not found, skipping crash.");
+}
 });
 
 // --- LANDING PAGE ENTER ---
