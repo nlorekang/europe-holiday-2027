@@ -1,318 +1,1581 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Europe Sibling Vacation 2027</title>
-  <meta name="description" content="Shared, interactive travel planner for our 20-day sibling trip to Paris, Venice, Florence, Rome, and Naples in October 2027.">
+/* --- DESIGN SYSTEM & CSS VARIABLES --- */
+:root {
+  --bg-primary: rgba(12, 12, 12, 0.45);
+  --bg-secondary: rgba(20, 20, 20, 0.86);
+  --bg-tertiary: rgba(32, 32, 32, 0.78);
+  --bg-glass: rgba(18, 18, 18, 0.82);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(249, 115, 22, 0.5);
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  --accent-orange: #f97316;
+  --accent-orange-hover: #ea580c;
+  --accent-cyan: #06b6d4;
+  --accent-cyan-hover: #0891b2;
+  --accent-emerald: #10b981;
+  --accent-emerald-hover: #059669;
+  --accent-rose: #f43f5e;
   
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
-  <div id="landing-page" class="landing-page-container">
-    <div class="bg-slideshow-container">
-      <div class="bg-slide active" style="background-image: url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1920&q=80')"></div>
-      <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1534113414509-0eec2bfb493f?auto=format&fit=crop&w=1920&q=80')"></div>
-      <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1528114039593-4366cc08227d?auto=format&fit=crop&w=1920&q=80')"></div>
-      <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=1920&q=80')"></div>
-      <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1920&q=80')"></div>
-      <div class="bg-overlay"></div>
-    </div>
+/* --- BACKGROUND SLIDESHOW --- */
+.bg-slideshow-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  overflow: hidden;
+}
 
-    <div class="landing-content">
-      <span class="landing-tag">OCTOBER 2027</span>
-      <h1 class="landing-title">Nthabi & Kev<br>European Holiday</h1>
-      
-      <p class="landing-subtitle">Paris • Venice • Florence • Rome • Naples</p>
-      
-      <div class="landing-countdown-container">
-        <div class="countdown-unit-days">
-          <span id="countdown-days" class="countdown-value">000</span>
-          <span class="countdown-label">Days to go</span>
-        </div>
-       </div>    
-<button class="landing-enter-btn" onclick="window.enterApp()">Explore More</button>
-    </div>
-  </div>
+.bg-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 2.5s ease-in-out;
+  transform: scale(1.03);
+  animation: zoomSlow 36s infinite alternate ease-in-out;
+  z-index: 1;
+}
 
-  <div id="main-app-container" class="app-container">
-    
-    <aside class="app-sidebar">
-      <div class="sidebar-header">
-        <span class="logo-icon">✈️</span>
-        <div class="logo-text">
-          <h1>EuroTrip 2027</h1>
-          <p>Sibling Edition</p>
-        </div>
-      </div>
-      
-      <nav class="sidebar-nav">
-        <button class="nav-btn active" id="btn-cities" onclick="switchTab('tab-cities')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          5 Cities
-        </button>
-        <button class="nav-btn" id="btn-map" onclick="switchTab('tab-map')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>
-          Interactive Map
-        </button>
-        <button class="nav-btn" id="btn-calendar" onclick="switchTab('tab-calendar')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          Booking Windows
-        </button>
-        <button class="nav-btn" id="btn-meals" onclick="switchTab('tab-meals')">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
-    <path d="M18 8V2M22 8V2M14 8V2M14 8a4 4 0 0 0 8 0M18 12v10" />
-    <path d="M6 2v20M6 2a4 4 0 0 1 4 4v6H6" />
-  </svg>
-  Dining
-</button>
-        <button class="nav-btn" id="btn-expenses" onclick="switchTab('tab-expenses')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-          Expense Splitter
-        </button>
-      </nav>
-      
-      <div class="sidebar-footer">
-        <div class="trip-dates">
-          <span>📅 30 Sep - 20 Oct 2027</span>
-          <span>⏳ 20 Days | 5 Cities</span>
-        </div>
-      </div>
-    </aside>
-    
-    <main class="app-main">
-      
-      <header class="app-header">
-        <div class="header-title">
-          <h2 id="current-view-title">Vacation Dashboard</h2>
-          <p id="current-view-subtitle">Overview of our 20-day sibling journey.</p>
-        </div>
-        <div class="header-stats">
-          <div class="stat-badge">
-            <span class="stat-label">System Date</span>
-            <span class="stat-value" id="system-date-badge">June 2026</span>
-          </div>
-        </div>
-      </header>
-      
-      <div class="content-container">
-        
-        <section id="tab-cities" class="tab-content active">
-          <div class="home-layout">
-            <div class="home-hero">
-              <h2>Sibling Vacation 2027</h2>
-              <p>20 Days | 5 Cities | A Linear Cross-Border European Itinerary</p>
-            </div>
-            <div class="gallery-grid">
-              <div class="gallery-card" onclick="selectCityFromHome('leg-paris')">
-                <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80')"></div>
-                <div class="gallery-card-overlay"></div>
-                <div class="gallery-card-content">
-                  <span class="gallery-card-leg">Leg 1 | 3 Days</span>
-                  <h4 class="gallery-card-title">Paris, France</h4>
-                  <span class="gallery-card-dates">1 Oct – 3 Oct 2027</span>
-                  <span class="gallery-card-sights">Eiffel Tower • The Louvre</span>
-                </div>
-              </div>
-              
-              <div class="gallery-card" onclick="selectCityFromHome('leg-venice')">
-                <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1534113414509-0eec2bfb493f?auto=format&fit=crop&w=800&q=80')"></div>
-                <div class="gallery-card-overlay"></div>
-                <div class="gallery-card-content">
-                  <span class="gallery-card-leg">Leg 2 | 3 Days</span>
-                  <h4 class="gallery-card-title">Venice, Italy</h4>
-                  <span class="gallery-card-dates">4 Oct – 6 Oct 2027</span>
-                  <span class="gallery-card-sights">St. Mark's • Grand Canal</span>
-                </div>
-              </div>
-              
-              <div class="gallery-card" onclick="selectCityFromHome('leg-florence')">
-                <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1528114039593-4366cc08227d?auto=format&fit=crop&w=800&q=80')"></div>
-                <div class="gallery-card-overlay"></div>
-                <div class="gallery-card-content">
-                  <span class="gallery-card-leg">Leg 3 | 4 Days</span>
-                  <h4 class="gallery-card-title">Florence, Italy</h4>
-                  <span class="gallery-card-dates">7 Oct – 10 Oct 2027</span>
-                  <span class="gallery-card-sights">Michelangelo's David • Pisa Trip</span>
-                </div>
-              </div>
-              
-              <div class="gallery-card" onclick="selectCityFromHome('leg-rome')">
-                <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80')"></div>
-                <div class="gallery-card-overlay"></div>
-                <div class="gallery-card-content">
-                  <span class="gallery-card-leg">Leg 4 | 5 Days</span>
-                  <h4 class="gallery-card-title">Rome, Italy</h4>
-                  <span class="gallery-card-dates">11 Oct – 15 Oct 2027</span>
-                  <span class="gallery-card-sights">Colosseum • Sistine Chapel • Vatican</span>
-                </div>
-              </div>
-              
-              <div class="gallery-card" onclick="selectCityFromHome('leg-naples')">
-                <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=800&q=80')"></div>
-                <div class="gallery-card-overlay"></div>
-                <div class="gallery-card-content">
-                  <span class="gallery-card-leg">Leg 5 | 5 Days</span>
-                  <h4 class="gallery-card-title">Naples & Amalfi Coast</h4>
-                  <span class="gallery-card-dates">16 Oct – 20 Oct 2027</span>
-                  <span class="gallery-card-sights">Pompeii Ruins • Capri Ferry</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+.bg-slide.active {
+  opacity: 0.55;
+}
 
-        <section id="tab-map" class="tab-content">
-          <div class="map-layout">
-            <div class="map-pane">
-              <div id="map" class="leaflet-map-container"></div>
-            </div>
-            <div class="itinerary-pane">
-              <div class="pane-header">
-                <h3>5-City Linear Route</h3>
-                <span class="badge">Click a leg to view details</span>
-              </div>
-              <div class="legs-list" id="legs-timeline"></div>
-              <div class="leg-detail-card" id="leg-detail-card">
-                <div class="card-placeholder">
-                  <span class="placeholder-icon">📍</span>
-                  <p>Select any city or timeline leg to inspect sibling accommodations, daily highlights, transit options, and food recommendations.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        <section id="tab-calendar" class="tab-content">
-          <div class="calendar-layout">
-            <div class="calendar-intro-card">
-              <div class="intro-text">
-                <h3>📅 Advance Booking Windows</h3>
-                <p>Track exactly when bookings open for international flights, intercity trains, and premium museums to lock in standard prices and avoid sell-outs.</p>
-              </div>
-              <div class="countdown-summary">
-                <div class="summary-box">
-                  <span id="booking-completed-count" class="summary-num">0</span>
-                  <span class="summary-lbl">Booked</span>
-                </div>
-                <div class="summary-box alert">
-                  <span id="booking-pending-count" class="summary-num">0</span>
-                  <span class="summary-lbl">Urgent / Open</span>
-                </div>
-              </div>
-            </div>
-            <div class="table-container">
-              <table class="booking-table" id="booking-table-el">
-                <thead>
-                  <tr>
-                    <th>Item Description</th>
-                    <th>Category</th>
-                    <th>Ideal Booking Window</th>
-                    <th>Booking Date</th>
-                    <th>Countdown Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="booking-table-body"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-        
-        <section id="tab-meals" class="tab-content">
-          <div class="meals-layout">
-            <div class="meals-sidebar">
-              <div class="meal-day-picker">
-                <h4>Select City View</h4>
-                <div class="city-pill-list" id="meals-city-picker"></div>
-              </div>
-            </div>
-            <div class="meals-details-pane" id="meals-details-pane"></div>
-          </div>
-        </section>
-        
-        <section id="tab-expenses" class="tab-content">
-          <div class="expenses-layout">
-            <div class="expenses-summary-bar">
-              <div class="exp-summary-card">
-                <span class="exp-summary-label">Total Joint Spent</span>
-                <span class="exp-summary-value" id="exp-total-spent">R 0.00</span>
-              </div>
-              <div class="exp-summary-card">
-                <span class="exp-summary-label">Brother 1 (You) Paid</span>
-                <span class="exp-summary-value" id="exp-p1-paid">R 0.00</span>
-              </div>
-              <div class="exp-summary-card">
-                <span class="exp-summary-label">Brother 2 (Brother) Paid</span>
-                <span class="exp-summary-value" id="exp-p2-paid">R 0.00</span>
-              </div>
-              <div class="exp-summary-card accent" id="settlement-card">
-                <span class="exp-summary-label">Settlement Status</span>
-                <span class="exp-summary-value" id="exp-settlement">Settle up to calculate</span>
-              </div>
-            </div>
-            <div class="expenses-body">
-              <div class="expense-form-panel">
-                <h3>💰 Log New Payment</h3>
-                <form id="add-expense-form" onsubmit="handleExpenseSubmit(event)">
-                  <div class="form-group">
-                    <label for="exp-desc">Description</label>
-                    <input type="text" id="exp-desc" placeholder="e.g. Louvre Tickets, Paris Airbnb" required>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label for="exp-amount">Amount (ZAR)</label>
-                      <input type="number" id="exp-amount" min="1" step="0.01" placeholder="0.00" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="exp-paid-by">Paid By</label>
-                      <select id="exp-paid-by" required>
-                        <option value="Brother 1">Brother 1 (You)</option>
-                        <option value="Brother 2">Brother 2 (Brother)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="exp-category">Category</label>
-                    <select id="exp-category" required>
-                      <option value="Accommodation">Accommodation</option>
-                      <option value="Transit">Transit & Trains</option>
-                      <option value="Flights">Flights</option>
-                      <option value="Sights">Sightseeing & Entry Tickets</option>
-                      <option value="Food">Food / Groceries</option>
-                      <option value="Other">Other Expenses</option>
-                    </select>
-                  </div>
-                  <button type="submit" class="submit-btn" id="btn-add-expense">Add Expense</button>
-                </form>
-              </div>
-              <div class="expense-ledger-panel">
-                <div class="ledger-header">
-                  <h3>Expense Ledger</h3>
-                  <button class="clear-btn" id="btn-clear-expenses" onclick="clearExpenses()">Reset Ledger</button>
-                </div>
-                <div class="ledger-list-wrapper">
-                  <ul class="ledger-list" id="expense-ledger-list"></ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-      </div>
-    </main>
-    
-  </div>
+.bg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(11, 15, 25, 0.25) 0%, rgba(11, 15, 25, 0.85) 100%);
+  z-index: 2;
+}
+
+@keyframes zoomSlow {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+
+/* --- BASIC RESET & BASE STYLES --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #060812;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-orange);
+}
+
+/* --- APP CONTAINER LAYOUT --- */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* --- SIDEBAR NAVIGATION --- */
+.app-sidebar {
+  width: 260px;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.sidebar-header {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.logo-icon {
+  font-size: 28px;
+}
+
+.logo-text h1 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.logo-text p {
+  font-size: 0.75rem;
+  color: var(--accent-orange);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebar-nav {
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease;
+}
+
+.nav-btn:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.nav-btn:hover .nav-icon {
+  transform: translateX(3px);
+}
+
+.nav-btn.active {
+  background-color: rgba(249, 115, 22, 0.1);
+  color: var(--accent-orange);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid var(--border-color);
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.trip-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.trip-dates span:first-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* --- MAIN CONTENT AREA --- */
+.app-main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.app-header {
+  height: 70px;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.header-title h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.header-title p {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.header-stats {
+  display: flex;
+  align-items: center;
+}
+
+.stat-badge {
+  background-color: var(--bg-tertiary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.content-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  position: relative;
+  height: calc(100vh - 70px);
+}
+
+/* --- TAB CONTENT SWITCHING --- */
+.tab-content {
+  display: none;
+  height: 100%;
+  width: 100%;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- TAB 1: INTERACTIVE MAP & ITINERARY --- */
+.map-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.map-pane {
+  flex-grow: 1;
+  height: 100%;
+  position: relative;
+}
+
+.leaflet-map-container {
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-primary);
+}
+
+.itinerary-pane {
+  width: 380px;
+  border-left: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.pane-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pane-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.7rem;
+  background-color: var(--bg-tertiary);
+  color: var(--accent-orange);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.legs-list {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leg-item {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.leg-item:hover {
+  border-color: var(--accent-orange);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.leg-item.active {
+  border-color: var(--accent-orange);
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(249, 115, 22, 0.05) 100%);
+  box-shadow: 0 0 0 1px var(--accent-orange);
+}
+
+.leg-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.leg-title {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.leg-days {
+  font-size: 0.75rem;
+  color: var(--accent-orange);
+  font-weight: 600;
+}
+
+.leg-dates-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.leg-detail-card {
+  padding: 24px;
+  border-top: 1px solid var(--border-color);
+  background-color: rgba(0,0,0,0.1);
+  flex-grow: 1;
+}
+
+.card-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-secondary);
+  height: 100%;
+  padding: 20px;
+}
+
+.placeholder-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.card-placeholder p {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* Detail Card Content */
+.detail-card-content h4 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.detail-section {
+  margin-bottom: 16px;
+}
+
+.detail-section h5 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--accent-orange);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.detail-section p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.highlight-list {
+  list-style: none;
+}
+
+.highlight-list li {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  padding-left: 14px;
+  position: relative;
+}
+
+.highlight-list li::before {
+  content: "•";
+  color: var(--accent-cyan);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+/* --- TAB 2: BOOKING WINDOWS CALENDAR --- */
+.calendar-layout {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.calendar-intro-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(12px);
+}
+
+.intro-text h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.intro-text p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  line-height: 1.5;
+}
+
+.countdown-summary {
+  display: flex;
+  gap: 16px;
+}
+
+.summary-box {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+}
+
+.summary-box.alert {
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.summary-num {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--accent-emerald);
+}
+
+.summary-box.alert .summary-num {
+  color: var(--accent-orange);
+}
+
+.summary-lbl {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.table-container {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.booking-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.booking-table th {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 16px 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.booking-table td {
+  padding: 16px 20px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.booking-table tr:last-child td {
+  border-bottom: none;
+}
+
+.booking-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.td-item-title {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.category-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.category-pill.flight { background-color: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+.category-pill.transit { background-color: rgba(249, 115, 22, 0.15); color: var(--accent-orange); }
+.category-pill.sight { background-color: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-indicator.urgent { color: var(--accent-rose); }
+.status-indicator.urgent .status-dot { background-color: var(--accent-rose); box-shadow: 0 0 8px var(--accent-rose); }
+
+.status-indicator.soon { color: var(--accent-orange); }
+.status-indicator.soon .status-dot { background-color: var(--accent-orange); box-shadow: 0 0 8px var(--accent-orange); }
+
+.status-indicator.future { color: var(--text-muted); }
+.status-indicator.future .status-dot { background-color: var(--text-muted); }
+
+.status-indicator.completed { color: var(--accent-emerald); }
+.status-indicator.completed .status-dot { background-color: var(--accent-emerald); box-shadow: 0 0 8px var(--accent-emerald); }
+
+.checkbox-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.checkbox-btn:hover {
+  background-color: var(--border-focus);
+  color: var(--text-primary);
+}
+
+.checkbox-btn.checked {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: var(--accent-emerald);
+  color: var(--accent-emerald);
+}
+
+/* --- TAB 3: FASTING & MEAL PLAN --- */
+.meals-layout {
+  padding: 32px;
+  display: flex;
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.meals-sidebar {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.fasting-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-accent-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: var(--accent-orange);
+}
+
+.fasting-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.fasting-icon {
+  font-size: 24px;
+}
+
+.fasting-header h4 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.fasting-time-graphic {
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.fasting-bar {
+  height: 12px;
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.eating-window-segment {
+  position: absolute;
+  height: 100%;
+  background-color: var(--accent-orange);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.eating-window-segment span {
+  display: none;
+}
+
+.fasting-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.fasting-note {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.meal-day-picker h4 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.city-pill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.city-pill-btn {
+  padding: 12px 16px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  text-align: left;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.city-pill-btn:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--text-muted);
+}
+
+.city-pill-btn.active {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 1px var(--accent-orange);
+}
+
+.city-pill-btn span:first-child {
+  font-weight: 500;
+}
+
+.city-pill-btn span:last-child {
+  font-size: 0.75rem;
+  color: var(--accent-orange);
+  font-weight: 600;
+}
+
+.meals-details-pane {
+  flex-grow: 1;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.meals-pane-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+}
+
+.meals-pane-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+.meals-pane-header p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.meal-block-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.meal-card {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.meal-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 10px;
+}
+
+.meal-time {
+  font-size: 0.75rem;
+  color: var(--accent-orange);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.meal-type {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.meal-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.market-highlights {
+  margin-top: 10px;
+}
+
+.market-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.market-list {
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.market-list li {
+  margin-bottom: 4px;
+  padding-left: 12px;
+  position: relative;
+}
+
+.market-list li::before {
+  content: "🛒";
+  position: absolute;
+  left: 0;
+  font-size: 0.65rem;
+}
+
+/* --- TAB 4: EXPENSE SPLITTER --- */
+.expenses-layout {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.expenses-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.exp-summary-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.exp-summary-card.accent {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(6, 182, 212, 0.08) 100%);
+  border-color: rgba(6, 182, 212, 0.2);
+}
+
+.exp-summary-card.accent-owed {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(16, 185, 129, 0.08) 100%);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.exp-summary-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.exp-summary-value {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.exp-summary-card.accent .exp-summary-value {
+  color: var(--accent-cyan);
+}
+
+.exp-summary-card.accent-owed .exp-summary-value {
+  color: var(--accent-emerald);
+}
+
+.expenses-body {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+}
+
+.expense-form-panel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  height: fit-content;
+}
+
+.expense-form-panel h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.submit-btn {
+  width: 100%;
+  background-color: var(--accent-orange);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 8px;
+}
+
+.submit-btn:hover {
+  background-color: var(--accent-orange-hover);
+}
+
+.expense-ledger-panel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  max-height: 520px;
+}
+
+.ledger-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ledger-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.clear-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+  border-color: var(--accent-rose);
+  color: var(--accent-rose);
+}
+
+.ledger-list-wrapper {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.ledger-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ledger-item-row {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.2s ease;
+}
+
+.ledger-item-row:hover {
+  transform: translateX(2px);
+}
+
+.ledger-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-icon {
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.ledger-item-info h4 {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.ledger-item-info p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ledger-item-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ledger-amount {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.delete-expense-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.delete-expense-btn:hover {
+  color: var(--accent-rose);
+  background-color: rgba(244, 63, 94, 0.1);
+}
+
+/* --- LEAFLET OVERRIDES & MAP POPUPS --- */
+.leaflet-popup-content-wrapper {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  font-family: var(--font-body) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.leaflet-popup-tip {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.map-popup-header {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent-orange);
+  margin-bottom: 4px;
+}
+
+.map-popup-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 1024px) {
+  .app-container {
+    flex-direction: column;
+  }
   
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  .app-sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
   
-  <script src="app.js"></script>
-</body>
-</html>
+  .sidebar-nav {
+    flex-direction: row;
+    padding: 10px;
+    overflow-x: auto;
+    gap: 6px;
+  }
+  
+  .nav-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .sidebar-footer, .sidebar-header {
+    display: none;
+  }
+  
+  .content-container {
+    height: calc(100vh - 120px);
+  }
+  
+  .map-layout {
+    flex-direction: column;
+  }
+  
+  .map-pane {
+    height: 40%;
+  }
+  
+  .itinerary-pane {
+    width: 100%;
+    height: 60%;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .meals-layout {
+    flex-direction: column;
+  }
+  
+  .meals-sidebar {
+    width: 100%;
+  }
+  
+  .meal-block-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .expenses-summary-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .expenses-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- GALLERY / HOME VIEW --- */
+.home-layout {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.home-hero {
+  text-align: center;
+  margin-bottom: 12px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-color);
+  padding: 32px;
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+}
+
+.home-hero h2 {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #ffffff, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.home-hero p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 24px;
+}
+
+.gallery-card:nth-child(1) { grid-column: 1 / 3; } /* Paris */
+.gallery-card:nth-child(2) { grid-column: 3 / 5; } /* Venice */
+.gallery-card:nth-child(3) { grid-column: 5 / 7; } /* Florence */
+.gallery-card:nth-child(4) { grid-column: 2 / 4; } /* Rome */
+.gallery-card:nth-child(5) { grid-column: 4 / 6; } /* Naples */
+
+.gallery-card {
+  position: relative;
+  height: 380px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s;
+}
+
+.gallery-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: var(--accent-orange);
+}
+
+.gallery-card-img {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gallery-card:hover .gallery-card-img {
+  transform: scale(1.1);
+}
+
+.gallery-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.9) 0%, rgba(10, 10, 10, 0.3) 50%, rgba(10, 10, 10, 0) 100%);
+  z-index: 1;
+}
+
+.gallery-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 24px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gallery-card-leg {
+  font-size: 0.7rem;
+  color: var(--accent-orange);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.gallery-card-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.gallery-card-dates {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.gallery-card-sights {
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* --- LANDING PAGE OVERLAY --- */
+.landing-page-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background-color: #000000;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+  visibility: visible;
+  opacity: 1;
+}
+
+.landing-page-container.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.landing-content {
+  text-align: center;
+  max-width: 800px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 10000;
+  pointer-events: auto;
+}
+
+.landing-tag {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-orange);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.landing-title {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.15;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.6);
+}
+
+.landing-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+/* Removes any background boxing and styles the clean Days display */
+.landing-countdown-container, 
+.countdown-unit-days, 
+.countdown-unit {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+
+.landing-countdown-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 25px 0;
+}
+
+.countdown-unit-days {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#countdown-days,
+.countdown-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #FF7A00;
+  text-transform: uppercase;
+  background: transparent;
+  line-height: 1;
+  display: inline-block;
+}
+
+.countdown-label {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #FF7A00;
+  text-transform: uppercase;
+  background: transparent;
+  line-height: 1;
+  margin-left: 10px;
+  letter-spacing: 1px;
+}
+
+.countdown-divider {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--accent-orange);
+  margin-top: -24px;
+}
+
+.landing-enter-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--accent-orange);
+  color: var(--text-primary);
+  border: none;
+  padding: 18px 44px;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 12px;
+}
+
+.landing-enter-btn:hover {
+  background-color: var(--accent-orange-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.5);
+}
+
+.btn-arrow {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.landing-enter-btn:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
+/* --- APP VISIBILITY: hidden until the user clicks "Explore More" --- */
+/* app.js adds the class "app-entered" to <body> inside enterApp() */
+.app-container {
+  display: none;
+}
+
+body.app-entered .app-container {
+  display: flex;
+}
+
+/* --- Background slideshow layering (kept safely behind buttons/content) --- */
+.bg-slideshow-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.bg-slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 2s ease-in-out;
+}
+
+.bg-slide.active {
+  opacity: 1;
+}
+
+@media (max-width: 1024px) {
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+  .gallery-card:nth-child(1),
+  .gallery-card:nth-child(2),
+  .gallery-card:nth-child(3),
+  .gallery-card:nth-child(4),
+  .gallery-card:nth-child(5) {
+    grid-column: span 6;
+  }
+}
