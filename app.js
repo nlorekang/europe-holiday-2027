@@ -89,80 +89,78 @@ const legsData = [
 ];
 
 // --- BOOKING CALENDAR DATABASE ---
-// Calculated based on travel dates in October 2027
 const bookingItems = [
   {
     id: "book-int-flight",
     desc: "International Flights (JNB to CDG, NAP to JNB)",
     category: "flight",
     windowText: "11 Months Prior",
-    openDate: "2026-11-01" // November 2026
+    openDate: "2026-11-01"
   },
   {
     id: "book-paris-flight",
     desc: "Paris (CDG) to Venice (VCE) Budget Flight",
     category: "flight",
     windowText: "8 Months Prior",
-    openDate: "2027-02-04" // February 2027
+    openDate: "2027-02-04"
   },
   {
     id: "book-train-ven-flo",
     desc: "High-Speed Train: Venice to Florence",
     category: "transit",
     windowText: "4 Months Prior",
-    openDate: "2027-06-07" // June 2027
+    openDate: "2027-06-07"
   },
   {
     id: "book-train-flo-rom",
     desc: "High-Speed Train: Florence to Rome",
     category: "transit",
     windowText: "4 Months Prior",
-    openDate: "2027-06-11" // June 2027
+    openDate: "2027-06-11"
   },
   {
     id: "book-train-rom-nap",
     desc: "High-Speed Train: Rome to Naples",
     category: "transit",
     windowText: "4 Months Prior",
-    openDate: "2027-06-16" // June 2027
+    openDate: "2027-06-16"
   },
   {
     id: "book-louvre",
     desc: "Louvre Museum Tickets (Paris)",
     category: "sight",
     windowText: "3 Months Prior",
-    openDate: "2027-07-02" // July 2027
+    openDate: "2027-07-02"
   },
   {
     id: "book-accademia",
     desc: "Accademia Gallery Tickets (Florence - David)",
     category: "sight",
     windowText: "3 Months Prior",
-    openDate: "2027-07-08" // July 2027
+    openDate: "2027-07-08"
   },
   {
     id: "book-vatican",
     desc: "Vatican Museums & Sistine Chapel Tickets",
     category: "sight",
     windowText: "60 Days Prior",
-    openDate: "2027-08-12" // August 2027
+    openDate: "2027-08-12"
   },
   {
     id: "book-papal",
     desc: "Papal Audience Ticket Requests (Rome)",
     category: "sight",
     windowText: "6 Months Prior",
-    openDate: "2027-04-13" // April 2027
+    openDate: "2027-04-13"
   }
 ];
 
 // --- APP STATE INITIALIZATION ---
-let map;
+let map = null;
 let markers = [];
 let routePolyline;
 let activeLegId = null;
 
-// Initial mock expenses to populate splitter
 const defaultExpenses = [
   { desc: "Flights JNB to CDG / NAP to JNB", amount: 24500, paidBy: "Brother 1", category: "Flights", date: "2026-06-15" },
   { desc: "Paris Self-Catering Airbnb Deposit", amount: 6200, paidBy: "Brother 2", category: "Accommodation", date: "2026-06-18" },
@@ -172,51 +170,62 @@ const defaultExpenses = [
 let expenses = JSON.parse(localStorage.getItem("trip_expenses")) || defaultExpenses;
 let bookingStates = JSON.parse(localStorage.getItem("booking_states")) || {};
 
-// Set system date to exactly match the metadata (June 2026) for uniform calculations
 const customSystemDate = new Date("2026-06-21T19:48:08");
 
 // --- INITIALIZE ON LOAD ---
 document.addEventListener("DOMContentLoaded", () => {
-  // Update header badge
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById("system-date-badge").textContent = customSystemDate.toLocaleDateString('en-US', options);
+  const badge = document.getElementById("system-date-badge");
+  if (badge) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    badge.textContent = customSystemDate.toLocaleDateString('en-US', options);
+  }
 
-  initMap();
-  renderItineraryTimeline();
-  renderBookingCalendar();
+  // Attempt to load functions safely
+  try { initMap(); } catch(e) { console.log("Map layout waiting for app entry."); }
+  try { renderItineraryTimeline(); } catch(e) { console.log("Timeline layout waiting."); }
+  try { renderBookingCalendar(); } catch(e) { console.log("Calendar waiting."); }
+  try { renderExpenseSplitter(); } catch(e) { console.log("Expenses waiting."); }
+  
   if (typeof renderDiningSection === 'function') {
-  renderDiningSection();
-} else {
-  console.log("Dining section function not found, skipping crash.");
-}
-  renderExpenseSplitter();
-  initBackgroundSlideshow();
-  if (typeof initLandingCountdown === 'function') {
-  initLandingCountdown();
-} else {
-  console.log("Countdown function not found, skipping crash.");
-}
+    renderDiningSection();
+  }
+  
+  startBackgroundSlideshow();
+  runTripCountdown();
 });
 
 // --- LANDING PAGE ENTER ---
 window.enterApp = function() {
+  console.log("Button clicked safely!");
+
   const landingPage = document.getElementById("landing-page");
   if (landingPage) {
-    landingPage.classList.add("fade-out");
-    setTimeout(() => {
-      landingPage.style.display = "none";
-    }, 600); // Hide completely after opacity transition
+    landingPage.style.display = "none";
   }
-  // Force map to redraw sizes in case it loaded hidden
-  if (map) {
-    setTimeout(() => {
+
+  const mainApp = document.getElementById("main-app-container");
+  if (mainApp) {
+    mainApp.style.display = "flex";
+  }
+
+  // Now that the dashboard is visible, render structural elements properly
+  try {
+    if (!map) {
+      initMap();
+    } else {
       map.invalidateSize();
-    }, 650);
+    }
+    renderItineraryTimeline();
+  } catch (e) {
+    console.error("Error setting up maps on application entry:", e);
+  }
+
+  if (typeof switchTab === 'function') {
+    switchTab('tab-cities');
   }
 };
 
 // --- LANDING COUNTDOWN ---
-// Countdown calculations targeting Oct 1, 2027
 function runTripCountdown() {
   const targetDate = new Date("October 1, 2027 00:00:00").getTime();
 
@@ -224,71 +233,68 @@ function runTripCountdown() {
     const now = new Date().getTime();
     const difference = targetDate - now;
 
+    const daysElement = document.getElementById("countdown-days");
+    if (!daysElement) return;
+
     if (difference <= 0) {
-      const daysElement = document.getElementById("countdown-days");
-      if (daysElement) daysElement.innerText = "0";
+      daysElement.innerText = "0";
       clearInterval(timerInterval);
       return;
     }
 
-    // Math calculation tracking strictly days left
     const totalDaysRemaining = Math.floor(difference / (1000 * 60 * 60 * 24));
-
-    const daysElement = document.getElementById("countdown-days");
-    if (daysElement) {
-      daysElement.innerText = totalDaysRemaining;
-    }
+    daysElement.innerText = totalDaysRemaining;
   }
 
-  // Run immediately on load, then check every second
   updateTimer();
   const timerInterval = setInterval(updateTimer, 1000);
 }
 
-// Start the timer engine automatically
-document.addEventListener("DOMContentLoaded", runTripCountdown);
 // --- BACKGROUND SLIDESHOW ANIMATION ---
-function initBackgroundSlideshow() {
-  const slides = document.querySelectorAll(".bg-slide");
-  if (!slides.length) return;
-  let currentSlideIndex = 0;
+function startBackgroundSlideshow() {
+  const slides = document.querySelectorAll('.bg-slide');
+  if (slides.length === 0) return;
   
+  let currentSlideIndex = 0;
   setInterval(() => {
-    slides[currentSlideIndex].classList.remove("active");
+    slides[currentSlideIndex].classList.remove('active');
     currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-    slides[currentSlideIndex].classList.add("active");
-  }, 7000); // Fade transition every 7 seconds
+    slides[currentSlideIndex].classList.add('active');
+  }, 4000);
 }
 
 // --- TAB SWITCHER LOGIC ---
 window.switchTab = function(tabId) {
-  // Deactivate all tabs
   document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
   
-  // Activate selected
-  document.getElementById(tabId).classList.add("active");
+  const targetTab = document.getElementById(tabId);
+  if (targetTab) targetTab.classList.add("active");
   
-  // Set button active
   if (tabId === "tab-cities") {
-    document.getElementById("btn-cities").classList.add("active");
+    const btn = document.getElementById("btn-cities");
+    if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "5 Cities Itinerary";
     document.getElementById("current-view-subtitle").textContent = "Overview of our 20-day sibling journey.";
   } else if (tabId === "tab-map") {
-    document.getElementById("btn-map").classList.add("active");
+    const btn = document.getElementById("btn-map");
+    if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "Interactive Map & Route";
     document.getElementById("current-view-subtitle").textContent = "Explore our linear European route and legs.";
-    setTimeout(() => { map.invalidateSize(); }, 150); // Refresh Leaflet size
+    if (map) setTimeout(() => { map.invalidateSize(); }, 150);
   } else if (tabId === "tab-calendar") {
-    document.getElementById("btn-calendar").classList.add("active");
+    const btn = document.getElementById("btn-calendar");
+    if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "Booking Calendars";
     document.getElementById("current-view-subtitle").textContent = "Keep track of active and upcoming advance booking windows.";
   } else if (tabId === "tab-meals") {
-    document.getElementById("btn-meals").classList.add("active");
+    const btn = document.getElementById("btn-meals");
+    if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "Dining Recommendations";
     document.getElementById("current-view-subtitle").textContent = "Recommended local lunch spots and dinner restaurants for each city.";
   } else if (tabId === "tab-expenses") {
-    document.getElementById("btn-expenses").classList.add("active");
+    const btn = document.getElementById("btn-expenses");
+    if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "Expense Splitter";
     document.getElementById("current-view-subtitle").textContent = "Track joint vacation costs and calculate splits.";
   }
@@ -301,7 +307,14 @@ window.selectCityFromHome = function(legId) {
 
 // --- MAP MODULE ---
 function initMap() {
-  // Centered over central/southern Europe
+  const mapElement = document.getElementById("map");
+  if (!mapElement) return;
+
+  if (typeof L === 'undefined') {
+    console.log("Leaflet map library not loaded yet.");
+    return;
+  }
+
   map = L.map("map", {
     center: [44.8, 11.5],
     zoom: 5,
@@ -309,18 +322,16 @@ function initMap() {
     attributionControl: false
   });
   
-  // Beautiful Dark Map Tiles (CartoDB Dark Matter)
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19
   }).addTo(map);
   
-  // Build markers and lines
   const routePoints = [];
+  markers = [];
   
   legsData.forEach((leg, index) => {
     routePoints.push(leg.latlng);
     
-    // Custom markers using premium styling
     const marker = L.marker(leg.latlng)
       .addTo(map)
       .bindPopup(`
@@ -331,16 +342,13 @@ function initMap() {
         </div>
       `);
       
-    // Store markers for programmatic panning
     markers.push({ id: leg.id, marker: marker, latlng: leg.latlng });
     
-    // Clicking marker triggers sidebar update
     marker.on('click', () => {
       selectLeg(leg.id);
     });
   });
   
-  // Draw the route connection (dotted accent line)
   routePolyline = L.polyline(routePoints, {
     color: '#f97316',
     weight: 3,
@@ -348,12 +356,12 @@ function initMap() {
     opacity: 0.8
   }).addTo(map);
   
-  // Fit map bounds to the polyline path
   map.fitBounds(routePolyline.getBounds(), { padding: [40, 40] });
 }
 
 function renderItineraryTimeline() {
   const container = document.getElementById("legs-timeline");
+  if (!container) return;
   container.innerHTML = "";
   
   legsData.forEach((leg, index) => {
@@ -377,17 +385,15 @@ function renderItineraryTimeline() {
 window.selectLeg = function(legId) {
   activeLegId = legId;
   
-  // Update timeline list active classes
   document.querySelectorAll(".leg-item").forEach(item => item.classList.remove("active"));
   const activeTimelineItem = document.getElementById(`timeline-${legId}`);
   if (activeTimelineItem) activeTimelineItem.classList.add("active");
   
-  // Find leg data
   const leg = legsData.find(l => l.id === legId);
   if (!leg) return;
   
-  // Render details card
   const detailsContainer = document.getElementById("leg-detail-card");
+  if (!detailsContainer) return;
   
   let sightsHtml = "";
   leg.sights.forEach(sight => {
@@ -397,28 +403,23 @@ window.selectLeg = function(legId) {
   detailsContainer.innerHTML = `
     <div class="detail-card-content">
       <h4>📍 ${leg.city} Details</h4>
-      
       <div class="detail-section">
         <h5>📅 Dates & Duration</h5>
         <p>${leg.dates} (${leg.days})</p>
       </div>
-      
       <div class="detail-section">
         <h5>✈️ Transit & Logistics</h5>
         <p>${leg.transit}</p>
       </div>
-      
       <div class="detail-section">
         <h5>🛏️ Sibling Accommodation</h5>
         <p>${leg.accommodation}</p>
       </div>
-      
       <div class="detail-section">
         <h5>🍕 Dining Recommendations</h5>
         <p>${leg.dining.lunch}</p>
         <p style="margin-top: 6px;">${leg.dining.dinner}</p>
       </div>
-      
       <div class="detail-section">
         <h5>🏛️ Core Highlights</h5>
         <ul class="highlight-list">
@@ -428,7 +429,6 @@ window.selectLeg = function(legId) {
     </div>
   `;
   
-  // Pan map and open popup
   const markerObj = markers.find(m => m.id === legId);
   if (markerObj && map) {
     map.setView(markerObj.latlng, 7, { animate: true, duration: 0.8 });
@@ -439,6 +439,7 @@ window.selectLeg = function(legId) {
 // --- BOOKING CALENDAR MODULE ---
 function renderBookingCalendar() {
   const body = document.getElementById("booking-table-body");
+  if (!body) return;
   body.innerHTML = "";
   
   let completedCount = 0;
@@ -448,32 +449,26 @@ function renderBookingCalendar() {
     const isBooked = bookingStates[item.id] || false;
     const openDate = new Date(item.openDate);
     
-    // Math to calculate countdown
     const timeDiff = openDate.getTime() - customSystemDate.getTime();
     const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
     
     let statusClass = "future";
-    let statusText = "Future Window";
     let statusBadgeText = "";
     
     if (isBooked) {
       statusClass = "completed";
-      statusText = "Completed / Booked";
       statusBadgeText = "✅ Booked";
       completedCount++;
     } else {
       pendingCount++;
       if (diffDays <= 0) {
         statusClass = "urgent";
-        statusText = "Urgent / Open Now";
         statusBadgeText = `🚨 Window Active (Open ${Math.abs(diffDays)}d)`;
       } else if (diffDays <= 30) {
         statusClass = "soon";
-        statusText = "Opening Soon";
         statusBadgeText = `⏳ Opens in ${diffDays} days`;
       } else {
         statusClass = "future";
-        statusText = "Future Booking";
         statusBadgeText = `📅 Opens in ${diffDays} days`;
       }
     }
@@ -496,11 +491,9 @@ function renderBookingCalendar() {
         </button>
       </td>
     `;
-    
     body.appendChild(row);
   });
   
-  // Update summaries
   document.getElementById("booking-completed-count").textContent = completedCount;
   document.getElementById("booking-pending-count").textContent = pendingCount;
 }
@@ -511,110 +504,10 @@ window.toggleBookingState = function(itemId) {
   renderBookingCalendar();
 };
 
-// --- FASTING & MEAL MODULE ---
-let activeMealsCityId = "leg-paris";
-
-function renderFastingSection() {
-  const picker = document.getElementById("meals-city-picker");
-  picker.innerHTML = "";
-  
-  legsData.forEach(leg => {
-    const btn = document.createElement("button");
-    btn.className = `city-pill-btn ${activeMealsCityId === leg.id ? 'active' : ''}`;
-    btn.onclick = () => {
-      activeMealsCityId = leg.id;
-      renderFastingSection();
-    };
-    btn.innerHTML = `
-      <span>📍 ${leg.city.split(',')[0]}</span>
-      <span>${leg.days}</span>
-    `;
-    picker.appendChild(btn);
-  });
-  
-  // Render meal detail side
-  const leg = legsData.find(l => l.id === activeMealsCityId);
-  const pane = document.getElementById("meals-details-pane");
-  
-  // Find supermarkets and local food specific to city
-  let groceryInfo = "";
-  let streetFoodInfo = "";
-  let mealHighlight = "";
-  
-  if (leg.id === "leg-paris") {
-    groceryInfo = "Monoprix Supermarket (Buy baguettes, premium French cheeses, salted butter, fresh salad, and seasonal fruits to prepare lunches at Gare de Lyon apartment).";
-    streetFoodInfo = "Visit traditional neighborhood Boulangeries (Bakeries) for croissants, pain au chocolat, and fresh baguettes with ham/butter (Jambon-Beurre).";
-    mealHighlight = "Eiffel Tower night viewing requires an early dinner at a local bistro or a bakery picnic by the Seine before the fasting cutoff.";
-  } else if (leg.id === "leg-venice") {
-    groceryInfo = "Conad or Coop (Stock up on fresh pasta, pesto sauce, local tomatoes, and prosciutto at Venezia Mestre supermarkets).";
-    streetFoodInfo = "Traditional Bacari bars. Order local 'Cicchetti' (Venetian tapas served on bread slices with seafood/cured meats) during the 5:00 - 7:30 PM window.";
-    mealHighlight = "Cicchetti tour satisfies the 50% dining-out ratio beautifully while remaining cheap and authentic.";
-  } else if (leg.id === "leg-florence") {
-    groceryInfo = "Conad Supermarket or Centrale Market (Source Tuscan olive oil, fresh pasta, tomatoes, garlic, and beef at Firenze SMN).";
-    streetFoodInfo = "Focaccerie (Gourmet focaccia bakeries). Get thick, warm focaccia bread sandwiches stuffed with mortadella, stracciatella cheese, and pistachio cream.";
-    mealHighlight = "Tuscan local ingredients make cooking brunch at the apartment simple, quick, and delicious.";
-  } else if (leg.id === "leg-rome") {
-    groceryInfo = "Coop or Conad Termini (Easy access inside or around Termini station for pasta, pecorino cheese, eggs, and guanciale).";
-    streetFoodInfo = "Aperitivo bars. Rome is famous for early evening buffet deals: order a drink and get access to free pasta salads, pizza slices, and warm bites.";
-    mealHighlight = "Aperitivo buffets align precisely with the 5:00 PM - 7:30 PM dinner slot, offering high-value sibling meals.";
-  } else if (leg.id === "leg-naples") {
-    groceryInfo = "Conad Superstore near Napoli Centrale (Stock up on fresh mozzarella, cherry tomatoes, and local basil).";
-    streetFoodInfo = "Wood-fired Neapolitan pizzerias. Try classic Pizza Margherita or Marinara (costing €4 to €6) as a street-food style lunch or dinner.";
-    mealHighlight = "Naples offers the absolute cheapest high-quality street food dining of the entire trip.";
-  }
-  
-  pane.innerHTML = `
-    <div class="meals-pane-header">
-      <h3>🍕 Food Plan & Fasting: ${leg.city}</h3>
-      <p>Custom sibling food guide mapping local supermarkets and authentic street-food blocks.</p>
-    </div>
-    
-    <div class="meal-block-grid">
-      <div class="meal-card">
-        <div class="meal-card-header">
-          <span class="meal-time">12:00 PM</span>
-          <span class="meal-type">🍳 Brunch (50% Apartment Cooked)</span>
-        </div>
-        <p>Prepare a high-protein, calorie-dense brunch in the apartment kitchen. Sibling team-up to cook and clean quickly before heading out for sightseeing.</p>
-        <div class="market-highlights">
-          <span class="market-label">Recommended Neighborhood Supermarket:</span>
-          <ul class="market-list">
-            <li>${groceryInfo}</li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="meal-card">
-        <div class="meal-card-header">
-          <span class="meal-time">5:00 PM - 7:30 PM</span>
-          <span class="meal-type">🍕 Dinner (50% Street Dining)</span>
-        </div>
-        <p>Explore city street food blocks to experience authentic local culinary culture without breaking the bank. Complete eating before the 8:00 PM cutoff.</p>
-        <div class="market-highlights">
-          <span class="market-label">Recommended Street-Food Block Highlights:</span>
-          <ul class="market-list">
-            <li>${streetFoodInfo}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    
-    <div class="fasting-card" style="margin-top: 10px; background-color: var(--bg-tertiary);">
-      <div class="card-accent-line" style="background-color: var(--accent-cyan);"></div>
-      <div class="fasting-header" style="margin-bottom: 8px;">
-        <span class="fasting-icon">💡</span>
-        <h4 style="color: var(--text-primary);">Sightseeing Fasting Tip for ${leg.city.split(',')[0]}</h4>
-      </div>
-      <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
-        ${mealHighlight} Make sure to stay hydrated during fasting hours (8:00 PM to 12:00 PM next day) using local public drinking fountains.
-      </p>
-    </div>
-  `;
-}
-
 // --- EXPENSE SPLITTER MODULE ---
 function renderExpenseSplitter() {
   const list = document.getElementById("expense-ledger-list");
+  if (!list) return;
   list.innerHTML = "";
   
   expenses.forEach((exp, index) => {
@@ -648,8 +541,8 @@ function renderExpenseSplitter() {
 
 function updateExpenseStats() {
   let total = 0;
-  let p1Paid = 0; // Brother 1 (You)
-  let p2Paid = 0; // Brother 2 (Brother)
+  let p1Paid = 0;
+  let p2Paid = 0;
   
   expenses.forEach(exp => {
     const amt = parseFloat(exp.amount) || 0;
@@ -661,17 +554,22 @@ function updateExpenseStats() {
     }
   });
   
-  // Render figures
-  document.getElementById("exp-total-spent").textContent = `R ${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  document.getElementById("exp-p1-paid").textContent = `R ${p1Paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  document.getElementById("exp-p2-paid").textContent = `R ${p2Paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const totalSpentEl = document.getElementById("exp-total-spent");
+  const p1PaidEl = document.getElementById("exp-p1-paid");
+  const p2PaidEl = document.getElementById("exp-p2-paid");
+
+  if (totalSpentEl) totalSpentEl.textContent = `R ${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (p1PaidEl) p1PaidEl.textContent = `R ${p1Paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (p2PaidEl) p2PaidEl.textContent = `R ${p2Paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   
   const settlementCard = document.getElementById("settlement-card");
   const settlementEl = document.getElementById("exp-settlement");
   
+  if (!settlementEl) return;
+
   if (total === 0) {
     settlementEl.textContent = "Settle Up (R 0.00)";
-    settlementCard.className = "exp-summary-card accent";
+    if (settlementCard) settlementCard.className = "exp-summary-card accent";
     return;
   }
   
@@ -679,15 +577,15 @@ function updateExpenseStats() {
   
   if (p1Paid === p2Paid) {
     settlementEl.textContent = "Perfectly Split!";
-    settlementCard.className = "exp-summary-card accent-owed";
+    if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else if (p1Paid > halfShare) {
     const diff = p1Paid - halfShare;
     settlementEl.textContent = `Brother owes you R ${diff.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    settlementCard.className = "exp-summary-card accent-owed";
+    if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else {
     const diff = p2Paid - halfShare;
     settlementEl.textContent = `You owe Brother R ${diff.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    settlementCard.className = "exp-summary-card accent";
+    if (settlementCard) settlementCard.className = "exp-summary-card accent";
   }
 }
 
@@ -712,8 +610,8 @@ window.handleExpenseSubmit = function(event) {
   expenses.push(newExpense);
   localStorage.setItem("trip_expenses", JSON.stringify(expenses));
   
-  // Reset form fields
-  document.getElementById("add-expense-form").reset();
+  const form = document.getElementById("add-expense-form");
+  if (form) form.reset();
   
   renderExpenseSplitter();
 };
@@ -731,45 +629,3 @@ window.clearExpenses = function() {
     renderExpenseSplitter();
   }
 };
-// Make absolutely sure the browser attaches this to the main window
-window.enterApp = function() {
-  console.log("Button clicked safely!");
-
-  // 1. Hide the landing page cover
-  const landingPage = document.getElementById('landing-page');
-  if (landingPage) {
-    landingPage.style.display = 'none';
-  }
-
-  // 2. Reveal the main trip planner app container
-  const mainApp = document.getElementById('main-app-container');
-  if (mainApp) {
-    mainApp.style.display = 'flex';
-  }
-
-  // 3. Ensure the app loads onto the 5 cities gallery tab
-  if (typeof switchTab === 'function') {
-    switchTab('tab-cities');
-  }
-};
-// Automatically cycle the background images on the landing page
-function startBackgroundSlideshow() {
-  const slides = document.querySelectorAll('.bg-slide');
-  if (slides.length === 0) return;
-  
-  let currentSlideIndex = 0;
-
-  setInterval(() => {
-    // Hide current slide
-    slides[currentSlideIndex].classList.remove('active');
-    
-    // Move to next slide, wrap around to 0 if at the end
-    currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-    
-    // Show next slide
-    slides[currentSlideIndex].classList.add('active');
-  }, 4000); // Changes the image smoothly every 4 seconds
-}
-
-// Fire off the background slideshow runner when page handles loading
-document.addEventListener("DOMContentLoaded", startBackgroundSlideshow);
