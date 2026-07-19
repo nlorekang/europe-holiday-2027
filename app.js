@@ -504,6 +504,57 @@ window.toggleBookingState = function(itemId) {
   renderBookingCalendar();
 };
 
+// --- DINING / MEALS MODULE ---
+function renderDiningSection() {
+  const picker = document.getElementById("meals-city-picker");
+  if (!picker) return;
+
+  picker.innerHTML = "";
+  legsData.forEach((leg, index) => {
+    const btn = document.createElement("button");
+    btn.className = "city-pill-btn" + (index === 0 ? " active" : "");
+    btn.id = `meal-pill-${leg.id}`;
+    btn.onclick = () => selectMealCity(leg.id);
+    btn.innerHTML = `<span>${leg.city}</span><span>${leg.days}</span>`;
+    picker.appendChild(btn);
+  });
+
+  selectMealCity(legsData[0].id);
+}
+
+window.selectMealCity = function(legId) {
+  document.querySelectorAll(".city-pill-btn").forEach(btn => btn.classList.remove("active"));
+  const activeBtn = document.getElementById(`meal-pill-${legId}`);
+  if (activeBtn) activeBtn.classList.add("active");
+
+  const leg = legsData.find(l => l.id === legId);
+  const pane = document.getElementById("meals-details-pane");
+  if (!leg || !pane) return;
+
+  pane.innerHTML = `
+    <div class="meals-pane-header">
+      <h3>${leg.city}</h3>
+      <p>Recommended lunch and dinner spots for this leg of the trip.</p>
+    </div>
+    <div class="meal-block-grid">
+      <div class="meal-card">
+        <div class="meal-card-header">
+          <span class="meal-type">Lunch</span>
+          <span class="meal-time">Midday</span>
+        </div>
+        <p>${leg.dining.lunch}</p>
+      </div>
+      <div class="meal-card">
+        <div class="meal-card-header">
+          <span class="meal-type">Dinner</span>
+          <span class="meal-time">Evening</span>
+        </div>
+        <p>${leg.dining.dinner}</p>
+      </div>
+    </div>
+  `;
+};
+
 // --- EXPENSE SPLITTER MODULE ---
 function renderExpenseSplitter() {
   const list = document.getElementById("expense-ledger-list");
