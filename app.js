@@ -10,7 +10,9 @@ const legsData = [
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Located near Gare de Lyon.<br>🔹 <em>Constraints:</em> Kitchen, in-unit washing machine, 2 separate sleeping spaces (Twin Room setup or bedroom + living room sleeper couch). Walkable to Gare de Lyon.",
     dining: {
       lunch: "🍴 <strong>L'As du Fallafel</strong> (Marais street food, famous for the best falafels in Paris) or <strong>Chez Alain Miam Miam</strong> (huge, delicious griddled sandwiches in the Marché des Enfants Rouges).",
-      dinner: "🍷 <strong>Le Train Bleu</strong> (inside Gare de Lyon, stunning historic dining hall, perfect for a special meal) or <strong>Bouillon Julien</strong> (beautiful Art Nouveau bistro serving high-quality, budget-friendly French classics)."
+      dinner: "🍷 <strong>Le Train Bleu</strong> (inside Gare de Lyon, stunning historic dining hall, perfect for a special meal) or <strong>Bouillon Julien</strong> (beautiful Art Nouveau bistro serving high-quality, budget-friendly French classics).",
+      market: "<strong>Marché d'Aligre</strong> (12th arr., open Tue–Sun mornings, one of Paris's best-value fresh markets) for produce, cheese and charcuterie; a <strong>Franprix or Monoprix</strong> for pantry basics.",
+      prepIdea: "Grab a fresh baguette, rotisserie chicken, and a wedge of cheese from the market for an easy no-cook lunch back at the apartment."
     },
     sights: [
       "Eiffel Tower (Spectacular night viewing and light show)",
@@ -27,7 +29,9 @@ const legsData = [
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Target properties near Venezia Mestre station (saves cost, within easy walking distance to platform).<br>🔹 <em>Constraints:</em> Full kitchen, washing machine, 2 separate beds.",
     dining: {
       lunch: "🍴 <strong>Osteria al Squero</strong> (order Venice's famous small open-faced sandwiches 'Cicchetti' while watching gondolas built across the canal) or <strong>Cantina Do Spade</strong> (historic tavern serving delicious fried seafood cones).",
-      dinner: "🍷 <strong>Trattoria Al Gazzettino</strong> (local Venetian cuisine, excellent seafood and squid ink pasta) or <strong>Osteria da Alberto</strong> (cozy local spot beloved by residents)."
+      dinner: "🍷 <strong>Trattoria Al Gazzettino</strong> (local Venetian cuisine, excellent seafood and squid ink pasta) or <strong>Osteria da Alberto</strong> (cozy local spot beloved by residents).",
+      market: "<strong>Rialto Market</strong> (Mercato di Rialto) — the fish hall runs Tue–Sat, 7:30am–12pm; the fruit & veg stalls run Mon–Sat from 7:30am. Go early for the best selection.",
+      prepIdea: "Pick up fresh fish or seasonal vegetables from the Erberia stalls and do a simple pan-fried dinner at the apartment — the quality is hard to beat."
     },
     sights: [
       "St. Mark's Basilica & St. Mark's Square",
@@ -44,7 +48,9 @@ const legsData = [
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Located within walking distance of Firenze Santa Maria Novella (SMN) station.<br>🔹 <em>Constraints:</em> Kitchen, washing machine, 2 separate sleeping spaces.",
     dining: {
       lunch: "🍴 <strong>All'Antico Vinaio</strong> (world-famous warm flatbread sandwiches filled with local cold cuts - lines move fast!) or <strong>Mercato Centrale</strong> (upstairs food hall featuring delicious artisan pizza, pasta, and panigacci).",
-      dinner: "🍷 <strong>Trattoria Za Za</strong> (traditional Tuscan ribollita soup, truffle pastas, and steaks) or <strong>Trattoria dall'Oste</strong> (specialist for authentic Florentine T-bone steak)."
+      dinner: "🍷 <strong>Trattoria Za Za</strong> (traditional Tuscan ribollita soup, truffle pastas, and steaks) or <strong>Trattoria dall'Oste</strong> (specialist for authentic Florentine T-bone steak).",
+      market: "<strong>Mercato di Sant'Ambrogio</strong> (Mon–Sat, 7am–2pm, closed Sunday) — Florence's local market, less touristy than Mercato Centrale, great for pecorino, cured meats, and seasonal produce.",
+      prepIdea: "Build a simple Tuscan antipasto lunch: pecorino, prosciutto, fresh artichokes and good bread from the market stalls."
     },
     sights: [
       "Michelangelo's David at the Accademia Gallery",
@@ -61,7 +67,9 @@ const legsData = [
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Sized for siblings near Roma Termini station (minimizes bag hauling).<br>🔹 <em>Constraints:</em> Equipped kitchen, washing machine, twin layout/sleeper.",
     dining: {
       lunch: "🍴 <strong>Bonci Pizzarium</strong> (Rome's best gourmet pizza by the slice, topped with high-quality seasonal ingredients) or <strong>Da Enzo al 29</strong> (iconic, tiny Trastevere trattoria famous for Carbonara and fried artichokes).",
-      dinner: "🍷 <strong>Osteria da Fortunata</strong> (watch local grandmas roll fresh pasta in the window, then enjoy hand-pulled strozzapreti cacio e pepe) or <strong>Cantina e Cucina</strong> (lively, hospitable spot for Roman pinsa and local wine)."
+      dinner: "🍷 <strong>Osteria da Fortunata</strong> (watch local grandmas roll fresh pasta in the window, then enjoy hand-pulled strozzapreti cacio e pepe) or <strong>Cantina e Cucina</strong> (lively, hospitable spot for Roman pinsa and local wine).",
+      market: "<strong>Mercato Testaccio</strong> (Mon–Sat, 7am–3:30pm, closed Sunday) — a genuinely local food market with fresh produce, meats and cheeses, plus excellent street-food stalls if you'd rather eat there.",
+      prepIdea: "Grab fresh pasta, market vegetables, and good olive oil for a quick home-cooked lunch — or just eat straight from the stalls (Mordi e Vai is a local favourite)."
     },
     sights: [
       "The Colosseum & Roman Forum",
@@ -79,7 +87,9 @@ const legsData = [
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Apartment near Napoli Centrale.<br>🔹 <em>Constraints:</em> Fully functional kitchen, washing machine, 2 separate sleeping setups.",
     dining: {
       lunch: "🍴 <strong>L'Antica Pizzeria da Michele</strong> (legendary, historic pizzeria serving only classic Margherita and Marinara wood-fired pizzas since 1870) or <strong>Gino Sorbillo</strong> (renowned Neapolitan pizza on Via dei Tribunali).",
-      dinner: "🍷 <strong>Trattoria da Nennella</strong> (lively Spanish Quarters spot where staff sing and joke, famous for cheap pasta e patate with provola) or <strong>Osteria Il Gobbetto</strong> (cozy spot for fresh local seafood)."
+      dinner: "🍷 <strong>Trattoria da Nennella</strong> (lively Spanish Quarters spot where staff sing and joke, famous for cheap pasta e patate with provola) or <strong>Osteria Il Gobbetto</strong> (cozy spot for fresh local seafood).",
+      market: "<strong>Mercato della Pignasecca</strong> (open daily, 9am–7pm) — Naples' oldest and most characteristic market, good for fresh mozzarella, tomatoes, seafood and produce.",
+      prepIdea: "A classic Caprese-style lunch: fresh buffalo mozzarella, ripe tomatoes and basil from the market, drizzled with good olive oil — no cooking required."
     },
     sights: [
       "Pompeii Ruins (Full-day regional train trip from Napoli Centrale)",
@@ -543,6 +553,13 @@ window.selectMealCity = function(legId) {
           <span class="meal-time">Midday</span>
         </div>
         <p>${leg.dining.lunch}</p>
+        <div class="market-highlights">
+          <span class="market-label">Prefer to cook? Shop at:</span>
+          <ul class="market-list">
+            <li>${leg.dining.market}</li>
+            <li>${leg.dining.prepIdea}</li>
+          </ul>
+        </div>
       </div>
       <div class="meal-card">
         <div class="meal-card-header">
