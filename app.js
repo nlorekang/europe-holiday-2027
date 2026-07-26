@@ -6,6 +6,7 @@ const legsData = [
     days: "3 Days",
     dates: "Fri, 1 Oct – Sun, 3 Oct 2027",
     latlng: [48.8566, 2.3522],
+    heroImage: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
     transit: "✈️ <strong>Outbound Flight:</strong> Thursday, 30 Sept from OR Tambo (JNB) landing at Paris (CDG) on 1 Oct.<br>✈️ <strong>Transit to Venice:</strong> Direct budget airline flight from Paris to Venice (VCE) on Monday, 4 Oct.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Located near Gare de Lyon.<br>🔹 <em>Constraints:</em> Kitchen, in-unit washing machine, 2 separate sleeping spaces (Twin Room setup or bedroom + living room sleeper couch). Walkable to Gare de Lyon.",
     dining: {
@@ -25,6 +26,7 @@ const legsData = [
     days: "3 Days",
     dates: "Mon, 4 Oct – Wed, 6 Oct 2027",
     latlng: [45.4344, 12.3388],
+    heroImage: "https://images.unsplash.com/photo-1534113414509-0eec2bfb493f?auto=format&fit=crop&w=800&q=80",
     transit: "✈️ <strong>Arrival:</strong> Direct budget airline flight from Paris on Monday, 4 Oct.<br>🚄 <strong>Transit to Florence:</strong> High-speed train (Trenitalia or Italo) from Venezia Mestre to Firenze SMN on Thursday, 7 Oct.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Target properties near Venezia Mestre station (saves cost, within easy walking distance to platform).<br>🔹 <em>Constraints:</em> Full kitchen, washing machine, 2 separate beds.",
     dining: {
@@ -44,6 +46,7 @@ const legsData = [
     days: "4 Days",
     dates: "Thu, 7 Oct – Sun, 10 Oct 2027",
     latlng: [43.7696, 11.2558],
+    heroImage: "https://images.unsplash.com/photo-1528114039593-4366cc08227d?auto=format&fit=crop&w=800&q=80",
     transit: "🚄 <strong>Arrival:</strong> High-speed train from Venice on Thursday, 7 Oct.<br>🚄 <strong>Transit to Rome:</strong> High-speed train (Trenitalia or Italo) from Firenze SMN to Roma Termini on Monday, 11 Oct.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Located within walking distance of Firenze Santa Maria Novella (SMN) station.<br>🔹 <em>Constraints:</em> Kitchen, washing machine, 2 separate sleeping spaces.",
     dining: {
@@ -63,6 +66,7 @@ const legsData = [
     days: "5 Days",
     dates: "Mon, 11 Oct – Fri, 15 Oct 2027",
     latlng: [41.9028, 12.4964],
+    heroImage: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
     transit: "🚄 <strong>Arrival:</strong> High-speed train from Florence on Monday, 11 Oct.<br>🚄 <strong>Transit to Naples:</strong> High-speed train (Trenitalia or Italo) from Roma Termini to Napoli Centrale on Saturday, 16 Oct.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Sized for siblings near Roma Termini station (minimizes bag hauling).<br>🔹 <em>Constraints:</em> Equipped kitchen, washing machine, twin layout/sleeper.",
     dining: {
@@ -83,6 +87,7 @@ const legsData = [
     days: "5 Days",
     dates: "Sat, 16 Oct – Wed, 20 Oct 2027",
     latlng: [40.8518, 14.2681],
+    heroImage: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=800&q=80",
     transit: "🚄 <strong>Arrival:</strong> High-speed train from Rome on Saturday, 16 Oct.<br>✈️ <strong>Inbound Return Flight:</strong> Departing Naples (NAP) on Wednesday, 20 Oct arriving back at JNB.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Apartment near Napoli Centrale.<br>🔹 <em>Constraints:</em> Fully functional kitchen, washing machine, 2 separate sleeping setups.",
     dining: {
@@ -547,7 +552,7 @@ window.selectMealCity = function(legId) {
       <p>Recommended lunch and dinner spots for this leg of the trip.</p>
     </div>
     <div class="meal-block-grid">
-      <div class="meal-card">
+      <div class="meal-card" style="background-image: linear-gradient(180deg, rgba(15,15,15,0.55) 0%, rgba(15,15,15,0.9) 100%), url('${leg.heroImage}'); background-size: cover; background-position: center;">
         <div class="meal-card-header">
           <span class="meal-type">Lunch</span>
           <span class="meal-time">Midday</span>
@@ -561,7 +566,7 @@ window.selectMealCity = function(legId) {
           </ul>
         </div>
       </div>
-      <div class="meal-card">
+      <div class="meal-card" style="background-image: linear-gradient(180deg, rgba(15,15,15,0.55) 0%, rgba(15,15,15,0.9) 100%), url('${leg.heroImage}'); background-size: cover; background-position: center;">
         <div class="meal-card-header">
           <span class="meal-type">Dinner</span>
           <span class="meal-time">Evening</span>
