@@ -490,17 +490,17 @@ function renderBookingCalendar() {
     
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td class="td-item-title">${item.desc}</td>
-      <td><span class="category-pill ${item.category}">${item.category.toUpperCase()}</span></td>
-      <td>${item.windowText}</td>
-      <td>${openDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-      <td>
+      <td class="td-item-title" data-label="Item">${item.desc}</td>
+      <td data-label="Category"><span class="category-pill ${item.category}">${item.category.toUpperCase()}</span></td>
+      <td data-label="Booking Window">${item.windowText}</td>
+      <td data-label="Booking Date">${openDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+      <td data-label="Status">
         <span class="status-indicator ${statusClass}">
           <span class="status-dot"></span>
           ${statusBadgeText}
         </span>
       </td>
-      <td>
+      <td data-label="Action">
         <button class="checkbox-btn ${isBooked ? 'checked' : ''}" onclick="toggleBookingState('${item.id}')">
           ${isBooked ? 'Unmark' : 'Mark Booked'}
         </button>
