@@ -241,28 +241,30 @@ window.enterApp = function() {
 };
 
 // --- LANDING COUNTDOWN ---
+// --- LANDING COUNTDOWN ---
 function runTripCountdown() {
-  const targetDate = new Date("September 19, 2027 00:00:00").getTime();
-
   function updateTimer() {
-    const now = new Date().getTime();
-    const difference = targetDate - now;
+    const now = new Date();
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const targetMidnight = new Date(2027, 8, 19); // month is 0-indexed: 8 = September
 
     const daysElement = document.getElementById("countdown-days");
     if (!daysElement) return;
 
-    if (difference <= 0) {
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const totalDaysRemaining = Math.round((targetMidnight - todayMidnight) / msPerDay);
+
+    if (totalDaysRemaining <= 0) {
       daysElement.innerText = "0";
       clearInterval(timerInterval);
       return;
     }
 
-    const totalDaysRemaining = Math.floor(difference / (1000 * 60 * 60 * 24));
     daysElement.innerText = totalDaysRemaining;
   }
 
   updateTimer();
-  const timerInterval = setInterval(updateTimer, 1000);
+  const timerInterval = setInterval(updateTimer, 1000 * 60 * 60); // just needs to refresh once an hour, not every second
 }
 
 // --- BACKGROUND SLIDESHOW ANIMATION ---
