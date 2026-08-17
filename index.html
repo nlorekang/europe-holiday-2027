@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Europe Sibling Vacation 2027</title>
-  <meta name="description" content="Shared, interactive travel planner for our 20-day sibling trip to Paris, Venice, Florence, Rome, and Naples in October 2027.">
+  <meta name="description" content="Shared, interactive travel planner for our 20-day sibling trip to Paris, Venice, Florence, Naples and Rome in September 2027.">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,10 +27,10 @@
     </div>
 
     <div class="landing-content">
-      <span class="landing-tag">OCTOBER 2027</span>
+      <span class="landing-tag">SEPTEMBER 2027</span>
       <h1 class="landing-title">Nthabi & Kev<br>European Holiday</h1>
       
-      <p class="landing-subtitle">Paris • Venice • Florence • Rome • Naples</p>
+      <p class="landing-subtitle">Paris • Venice • Florence • Naples • Rome</p>
       
       <div class="landing-countdown-container">
         <div class="countdown-unit-days">
@@ -38,9 +38,7 @@
           <span class="countdown-label">Days to go</span>
         </div>
        </div>    
-     <button class="landing-enter-btn" onclick="document.querySelector('.landing-page-container').style.display='none'; document.querySelector('.app-container').style.display='flex';">
-  Explore More
-</button>
+   <button class="landing-enter-btn" onclick="window.enterApp()">Explore More</button>
     </div>
   </div>
 
@@ -69,8 +67,6 @@
           Booking Windows
         </button>
         <button class="nav-btn" id="btn-meals" onclick="switchTab('tab-meals')">
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7M13 3h7a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-7M12 2v20M7 8h2M7 12h2"/></svg>
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
     <path d="M18 8V2M22 8V2M14 8V2M14 8a4 4 0 0 0 8 0M18 12v10" />
     <path d="M6 2v20M6 2a4 4 0 0 1 4 4v6H6" />
@@ -85,7 +81,7 @@
       
       <div class="sidebar-footer">
         <div class="trip-dates">
-          <span>📅 30 Sep - 20 Oct 2027</span>
+          <span>📅 19 Sep - 08 Oct 2027</span>
           <span>⏳ 20 Days | 5 Cities</span>
         </div>
       </div>
@@ -97,12 +93,6 @@
         <div class="header-title">
           <h2 id="current-view-title">Vacation Dashboard</h2>
           <p id="current-view-subtitle">Overview of our 20-day sibling journey.</p>
-        </div>
-        <div class="header-stats">
-          <div class="stat-badge">
-            <span class="stat-label">System Date</span>
-            <span class="stat-value" id="system-date-badge">June 2026</span>
-          </div>
         </div>
       </header>
       
@@ -119,9 +109,9 @@
                 <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80')"></div>
                 <div class="gallery-card-overlay"></div>
                 <div class="gallery-card-content">
-                  <span class="gallery-card-leg">Leg 1 | 3 Days</span>
+                  <span class="gallery-card-leg">Leg 1 | 4 Days</span>
                   <h4 class="gallery-card-title">Paris, France</h4>
-                  <span class="gallery-card-dates">1 Oct – 3 Oct 2027</span>
+                  <span class="gallery-card-dates">19 Sep – 22 Sep 2027</span>
                   <span class="gallery-card-sights">Eiffel Tower • The Louvre</span>
                 </div>
               </div>
@@ -132,7 +122,7 @@
                 <div class="gallery-card-content">
                   <span class="gallery-card-leg">Leg 2 | 3 Days</span>
                   <h4 class="gallery-card-title">Venice, Italy</h4>
-                  <span class="gallery-card-dates">4 Oct – 6 Oct 2027</span>
+                  <span class="gallery-card-dates">23 Sep – 25 Sep 2027</span>
                   <span class="gallery-card-sights">St. Mark's • Grand Canal</span>
                 </div>
               </div>
@@ -143,30 +133,32 @@
                 <div class="gallery-card-content">
                   <span class="gallery-card-leg">Leg 3 | 4 Days</span>
                   <h4 class="gallery-card-title">Florence, Italy</h4>
-                  <span class="gallery-card-dates">7 Oct – 10 Oct 2027</span>
+                  <span class="gallery-card-dates">26 Sep – 29 Sep 2027</span>
                   <span class="gallery-card-sights">Michelangelo's David • Pisa Trip</span>
                 </div>
               </div>
               
-              <div class="gallery-card" onclick="selectCityFromHome('leg-rome')">
-                <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80')"></div>
-                <div class="gallery-card-overlay"></div>
-                <div class="gallery-card-content">
-                  <span class="gallery-card-leg">Leg 4 | 5 Days</span>
-                  <h4 class="gallery-card-title">Rome, Italy</h4>
-                  <span class="gallery-card-dates">11 Oct – 15 Oct 2027</span>
-                  <span class="gallery-card-sights">Colosseum • Sistine Chapel • Vatican</span>
-                </div>
-              </div>
-              
+                
               <div class="gallery-card" onclick="selectCityFromHome('leg-naples')">
                 <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=800&q=80')"></div>
                 <div class="gallery-card-overlay"></div>
                 <div class="gallery-card-content">
-                  <span class="gallery-card-leg">Leg 5 | 5 Days</span>
+                  <span class="gallery-card-leg">Leg 4 | 5 Days</span>
                   <h4 class="gallery-card-title">Naples & Amalfi Coast</h4>
-                  <span class="gallery-card-dates">16 Oct – 20 Oct 2027</span>
+                  <span class="gallery-card-dates">30 Sep – 04 Oct 2027</span>
                   <span class="gallery-card-sights">Pompeii Ruins • Capri Ferry</span>
+                </div>
+              </div>
+
+
+              <div class="gallery-card" onclick="selectCityFromHome('leg-rome')">
+                <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80')"></div>
+                <div class="gallery-card-overlay"></div>
+                <div class="gallery-card-content">
+                  <span class="gallery-card-leg">Leg 5 | 5 Days</span>
+                  <h4 class="gallery-card-title">Rome, Italy</h4>
+                  <span class="gallery-card-dates">05 Oct – 08 Oct 2027</span>
+                  <span class="gallery-card-sights">Colosseum • Sistine Chapel • Vatican</span>
                 </div>
               </div>
             </div>
@@ -250,11 +242,11 @@
                 <span class="exp-summary-value" id="exp-total-spent">R 0.00</span>
               </div>
               <div class="exp-summary-card">
-                <span class="exp-summary-label">Brother 1 (You) Paid</span>
+                <span class="exp-summary-label">Kevin 1 (You) Paid</span>
                 <span class="exp-summary-value" id="exp-p1-paid">R 0.00</span>
               </div>
               <div class="exp-summary-card">
-                <span class="exp-summary-label">Brother 2 (Brother) Paid</span>
+                <span class="exp-summary-label">Kevin 2 (Kevin) Paid</span>
                 <span class="exp-summary-value" id="exp-p2-paid">R 0.00</span>
               </div>
               <div class="exp-summary-card accent" id="settlement-card">
@@ -278,8 +270,8 @@
                     <div class="form-group">
                       <label for="exp-paid-by">Paid By</label>
                       <select id="exp-paid-by" required>
-                        <option value="Brother 1">Brother 1 (You)</option>
-                        <option value="Brother 2">Brother 2 (Brother)</option>
+                        <option value="Kevin 1">Kevin 1 (You)</option>
+                        <option value="Kevin 2">Kevin 2 (Kevin)</option>
                       </select>
                     </div>
                   </div>
