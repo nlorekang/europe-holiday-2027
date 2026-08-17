@@ -177,9 +177,9 @@ let routePolyline;
 let activeLegId = null;
 
 const defaultExpenses = [
-  { desc: "Flights JNB to CDG / FCO to JNB", amount: 24500, paidBy: "Brother 1", category: "Flights", date: "2026-06-15" },
-  { desc: "Paris Self-Catering Airbnb Deposit", amount: 6200, paidBy: "Brother 2", category: "Accommodation", date: "2026-06-18" },
-  { desc: "Louvre Advanced Group Tickets", amount: 980, paidBy: "Brother 1", category: "Sights", date: "2026-06-20" }
+  { desc: "Flights JNB to CDG / FCO to JNB", amount: 24500, paidBy: "Kevin 1", category: "Flights", date: "2026-06-15" },
+  { desc: "Paris Self-Catering Airbnb Deposit", amount: 6200, paidBy: "Kevin 2", category: "Accommodation", date: "2026-06-18" },
+  { desc: "Louvre Advanced Group Tickets", amount: 980, paidBy: "Kevin 1", category: "Sights", date: "2026-06-20" }
 ];
 
 let expenses = JSON.parse(localStorage.getItem("trip_expenses")) || defaultExpenses;
@@ -622,7 +622,7 @@ function updateExpenseStats() {
   expenses.forEach(exp => {
     const amt = parseFloat(exp.amount) || 0;
     total += amt;
-    if (exp.paidBy === "Brother 1") {
+    if (exp.paidBy === "Kevin 1") {
       p1Paid += amt;
     } else {
       p2Paid += amt;
@@ -655,11 +655,11 @@ function updateExpenseStats() {
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else if (p1Paid > halfShare) {
     const diff = p1Paid - halfShare;
-    settlementEl.textContent = `Brother owes you R ${diff.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    settlementEl.textContent = `Kevin owes you R ${diff.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else {
     const diff = p2Paid - halfShare;
-    settlementEl.textContent = `You owe Brother R ${diff.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    settlementEl.textContent = `You owe Kevin R ${diff.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     if (settlementCard) settlementCard.className = "exp-summary-card accent";
   }
 }
