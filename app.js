@@ -242,7 +242,7 @@ window.enterApp = function() {
 
 // --- LANDING COUNTDOWN ---
 function runTripCountdown() {
-  const targetDate = new Date("October 1, 2027 00:00:00").getTime();
+  const targetDate = new Date("September 19, 2027 00:00:00").getTime();
 
   function updateTimer() {
     const now = new Date().getTime();
