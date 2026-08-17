@@ -3,11 +3,11 @@ const legsData = [
   {
     id: "leg-paris",
     city: "Paris, France",
-    days: "3 Days",
-    dates: "Fri, 1 Oct – Sun, 3 Oct 2027",
+    days: "4 Days",
+    dates: "Sun, 19 Sep – Wed, 22 Sep 2027",
     latlng: [48.8566, 2.3522],
     heroImage: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80",
-    transit: "✈️ <strong>Outbound Flight:</strong> Thursday, 30 Sept from OR Tambo (JNB) landing at Paris (CDG) on 1 Oct.<br>✈️ <strong>Transit to Venice:</strong> Direct budget airline flight from Paris to Venice (VCE) on Monday, 4 Oct.",
+    transit: "✈️ <strong>Outbound Flight:</strong> Saturday, 18 Sept from OR Tambo (JNB) landing at Paris (CDG) on 19 Sep.<br>✈️ <strong>Transit to Venice:</strong> Direct budget airline flight from Paris to Venice (VCE) on Thursday, 23 Sep.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Located near Gare de Lyon.<br>🔹 <em>Constraints:</em> Kitchen, in-unit washing machine, 2 separate sleeping spaces (Twin Room setup or bedroom + living room sleeper couch). Walkable to Gare de Lyon.",
     dining: {
       lunch: "🍴 <strong>L'As du Fallafel</strong> (Marais street food, famous for the best falafels in Paris) or <strong>Chez Alain Miam Miam</strong> (huge, delicious griddled sandwiches in the Marché des Enfants Rouges).",
@@ -24,10 +24,10 @@ const legsData = [
     id: "leg-venice",
     city: "Venice, Italy",
     days: "3 Days",
-    dates: "Mon, 4 Oct – Wed, 6 Oct 2027",
+    dates: "Thu, 23 Sep – Sat, 25 Sep 2027",
     latlng: [45.4344, 12.3388],
     heroImage: "https://images.unsplash.com/photo-1534113414509-0eec2bfb493f?auto=format&fit=crop&w=800&q=80",
-    transit: "✈️ <strong>Arrival:</strong> Direct budget airline flight from Paris on Monday, 4 Oct.<br>🚄 <strong>Transit to Florence:</strong> High-speed train (Trenitalia or Italo) from Venezia Mestre to Firenze SMN on Thursday, 7 Oct.",
+    transit: "✈️ <strong>Arrival:</strong> Direct budget airline flight from Paris on Thursday, 23 Sep.<br>🚄 <strong>Transit to Florence:</strong> High-speed train (Trenitalia or Italo) from Venezia Mestre to Firenze SMN on Sunday, 26 Sep.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Target properties near Venezia Mestre station (saves cost, within easy walking distance to platform).<br>🔹 <em>Constraints:</em> Full kitchen, washing machine, 2 separate beds.",
     dining: {
       lunch: "🍴 <strong>Osteria al Squero</strong> (order Venice's famous small open-faced sandwiches 'Cicchetti' while watching gondolas built across the canal) or <strong>Cantina Do Spade</strong> (historic tavern serving delicious fried seafood cones).",
@@ -44,10 +44,10 @@ const legsData = [
     id: "leg-florence",
     city: "Florence, Italy",
     days: "4 Days",
-    dates: "Thu, 7 Oct – Sun, 10 Oct 2027",
+    dates: "Sun, 26 Sep – Wed, 29 Sep 2027",
     latlng: [43.7696, 11.2558],
     heroImage: "https://images.unsplash.com/photo-1528114039593-4366cc08227d?auto=format&fit=crop&w=800&q=80",
-    transit: "🚄 <strong>Arrival:</strong> High-speed train from Venice on Thursday, 7 Oct.<br>🚄 <strong>Transit to Rome:</strong> High-speed train (Trenitalia or Italo) from Firenze SMN to Roma Termini on Monday, 11 Oct.",
+    transit: "🚄 <strong>Arrival:</strong> High-speed train from Venice on Sunday, 26 Sep.<br>🚄 <strong>Transit to Naples:</strong> High-speed train (Trenitalia or Italo) from Firenze SMN to Napoli Centrale on Thursday, 30 Sep.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Located within walking distance of Firenze Santa Maria Novella (SMN) station.<br>🔹 <em>Constraints:</em> Kitchen, washing machine, 2 separate sleeping spaces.",
     dining: {
       lunch: "🍴 <strong>All'Antico Vinaio</strong> (world-famous warm flatbread sandwiches filled with local cold cuts - lines move fast!) or <strong>Mercato Centrale</strong> (upstairs food hall featuring delicious artisan pizza, pasta, and panigacci).",
@@ -61,34 +61,13 @@ const legsData = [
     ]
   },
   {
-    id: "leg-rome",
-    city: "Rome, Italy",
-    days: "5 Days",
-    dates: "Mon, 11 Oct – Fri, 15 Oct 2027",
-    latlng: [41.9028, 12.4964],
-    heroImage: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
-    transit: "🚄 <strong>Arrival:</strong> High-speed train from Florence on Monday, 11 Oct.<br>🚄 <strong>Transit to Naples:</strong> High-speed train (Trenitalia or Italo) from Roma Termini to Napoli Centrale on Saturday, 16 Oct.",
-    accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Sized for siblings near Roma Termini station (minimizes bag hauling).<br>🔹 <em>Constraints:</em> Equipped kitchen, washing machine, twin layout/sleeper.",
-    dining: {
-      lunch: "🍴 <strong>Bonci Pizzarium</strong> (Rome's best gourmet pizza by the slice, topped with high-quality seasonal ingredients) or <strong>Da Enzo al 29</strong> (iconic, tiny Trastevere trattoria famous for Carbonara and fried artichokes).",
-      dinner: "🍷 <strong>Osteria da Fortunata</strong> (watch local grandmas roll fresh pasta in the window, then enjoy hand-pulled strozzapreti cacio e pepe) or <strong>Cantina e Cucina</strong> (lively, hospitable spot for Roman pinsa and local wine).",
-      market: "<strong>Mercato Testaccio</strong> (Mon–Sat, 7am–3:30pm, closed Sunday) — a genuinely local food market with fresh produce, meats and cheeses, plus excellent street-food stalls if you'd rather eat there.",
-      prepIdea: "Grab fresh pasta, market vegetables, and good olive oil for a quick home-cooked lunch — or just eat straight from the stalls (Mordi e Vai is a local favourite)."
-    },
-    sights: [
-      "The Colosseum & Roman Forum",
-      "Sistine Chapel & Vatican Museums",
-      "Papal Audience at the Vatican (Blocked off for Wednesday morning, 13 October)"
-    ]
-  },
-  {
     id: "leg-naples",
     city: "Naples & Amalfi Coast",
     days: "5 Days",
-    dates: "Sat, 16 Oct – Wed, 20 Oct 2027",
+    dates: "Thu, 30 Sep – Mon, 04 Oct 2027",
     latlng: [40.8518, 14.2681],
     heroImage: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=800&q=80",
-    transit: "🚄 <strong>Arrival:</strong> High-speed train from Rome on Saturday, 16 Oct.<br>✈️ <strong>Inbound Return Flight:</strong> Departing Naples (NAP) on Wednesday, 20 Oct arriving back at JNB.",
+    transit: "🚄 <strong>Arrival:</strong> High-speed train from Florence on Thursday, 30 Sep.<br>🚄 <strong>Transit to Rome:</strong> High-speed train (Trenitalia or Italo) from Napoli Centrale to Roma Termini on Tuesday, 5 Oct.",
     accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Apartment near Napoli Centrale.<br>🔹 <em>Constraints:</em> Fully functional kitchen, washing machine, 2 separate sleeping setups.",
     dining: {
       lunch: "🍴 <strong>L'Antica Pizzeria da Michele</strong> (legendary, historic pizzeria serving only classic Margherita and Marinara wood-fired pizzas since 1870) or <strong>Gino Sorbillo</strong> (renowned Neapolitan pizza on Via dei Tribunali).",
@@ -100,6 +79,27 @@ const legsData = [
       "Pompeii Ruins (Full-day regional train trip from Napoli Centrale)",
       "Scenic ferry day-trip routes out to Capri or Positano / Amalfi"
     ]
+  },
+  {
+    id: "leg-rome",
+    city: "Rome, Italy",
+    days: "4 Days",
+    dates: "Tue, 05 Oct – Fri, 08 Oct 2027",
+    latlng: [41.9028, 12.4964],
+    heroImage: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
+    transit: "🚄 <strong>Arrival:</strong> High-speed train from Naples on Tuesday, 5 Oct.<br>✈️ <strong>Inbound Return Flight:</strong> Departing Rome (FCO) on Friday, 8 Oct arriving back at JNB.",
+    accommodation: "🏨 <strong>Self-Catering Apartment:</strong> Sized for siblings near Roma Termini station (minimizes bag hauling).<br>🔹 <em>Constraints:</em> Equipped kitchen, washing machine, twin layout/sleeper.",
+    dining: {
+      lunch: "🍴 <strong>Bonci Pizzarium</strong> (Rome's best gourmet pizza by the slice, topped with high-quality seasonal ingredients) or <strong>Da Enzo al 29</strong> (iconic, tiny Trastevere trattoria famous for Carbonara and fried artichokes).",
+      dinner: "🍷 <strong>Osteria da Fortunata</strong> (watch local grandmas roll fresh pasta in the window, then enjoy hand-pulled strozzapreti cacio e pepe) or <strong>Cantina e Cucina</strong> (lively, hospitable spot for Roman pinsa and local wine).",
+      market: "<strong>Mercato Testaccio</strong> (Mon–Sat, 7am–3:30pm, closed Sunday) — a genuinely local food market with fresh produce, meats and cheeses, plus excellent street-food stalls if you'd rather eat there.",
+      prepIdea: "Grab fresh pasta, market vegetables, and good olive oil for a quick home-cooked lunch — or just eat straight from the stalls (Mordi e Vai is a local favourite)."
+    },
+    sights: [
+      "The Colosseum & Roman Forum",
+      "Sistine Chapel & Vatican Museums",
+      "Papal Audience at the Vatican (date TBC — see note)"
+    ]
   }
 ];
 
@@ -107,7 +107,7 @@ const legsData = [
 const bookingItems = [
   {
     id: "book-int-flight",
-    desc: "International Flights (JNB to CDG, NAP to JNB)",
+    desc: "International Flights (JNB to CDG, FCO to JNB)",
     category: "flight",
     windowText: "11 Months Prior",
     openDate: "2026-11-01"
@@ -128,14 +128,14 @@ const bookingItems = [
   },
   {
     id: "book-train-flo-rom",
-    desc: "High-Speed Train: Florence to Rome",
+    desc: "High-Speed Train: Florence to Naples",
     category: "transit",
     windowText: "4 Months Prior",
     openDate: "2027-06-11"
   },
   {
     id: "book-train-rom-nap",
-    desc: "High-Speed Train: Rome to Naples",
+    desc: "High-Speed Train: Naples to Rome",
     category: "transit",
     windowText: "4 Months Prior",
     openDate: "2027-06-16"
@@ -177,7 +177,7 @@ let routePolyline;
 let activeLegId = null;
 
 const defaultExpenses = [
-  { desc: "Flights JNB to CDG / NAP to JNB", amount: 24500, paidBy: "Brother 1", category: "Flights", date: "2026-06-15" },
+  { desc: "Flights JNB to CDG / FCO to JNB", amount: 24500, paidBy: "Brother 1", category: "Flights", date: "2026-06-15" },
   { desc: "Paris Self-Catering Airbnb Deposit", amount: 6200, paidBy: "Brother 2", category: "Accommodation", date: "2026-06-18" },
   { desc: "Louvre Advanced Group Tickets", amount: 980, paidBy: "Brother 1", category: "Sights", date: "2026-06-20" }
 ];
