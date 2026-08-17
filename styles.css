@@ -1579,3 +1579,80 @@ body.app-entered .app-container {
     grid-column: span 6;
   }
 }
+
+/* --- BOOKING TABLE: PHONE LAYOUT --- */
+/* On narrow screens, the 6-column table becomes a stack of readable cards
+   instead of a cramped or sideways-scrolling table. */
+@media (max-width: 640px) {
+  .calendar-layout {
+    padding: 16px;
+  }
+
+  .calendar-intro-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .countdown-summary {
+    width: 100%;
+  }
+
+  .summary-box {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .booking-table thead {
+    display: none;
+  }
+
+  .booking-table,
+  .booking-table tbody,
+  .booking-table tr,
+  .booking-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .booking-table tr {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .booking-table td {
+    padding: 6px 0;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    text-align: right;
+  }
+
+  .booking-table td.td-item-title {
+    font-size: 1rem;
+    padding-bottom: 10px;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .booking-table td.td-item-title::before {
+    content: none;
+  }
+
+  .booking-table td::before {
+    content: attr(data-label);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .checkbox-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
