@@ -728,7 +728,7 @@ window.fetchExchangeRate = function() {
 
   valueEl.textContent = "Loading…";
 
-  fetch("https://api.frankfurter.app/latest?from=ZAR&to=EUR")
+  fetch("https://api.frankfurter.dev/v1/latest?base=ZAR&symbols=EUR")
     .then((res) => {
       if (!res.ok) throw new Error("Rate request failed");
       return res.json();
