@@ -436,7 +436,7 @@ window.selectLeg = function(legId) {
         <p>${leg.transit}</p>
       </div>
       <div class="detail-section">
-        <h5>🛏️ Sibling Accommodation</h5>
+        <h5>🛏️ Accommodation</h5>
         <p>${leg.accommodation}</p>
       </div>
       <div class="detail-section">
