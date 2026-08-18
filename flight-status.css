@@ -1,0 +1,77 @@
+.flight-status {
+  border: 1px solid #e2e2e2;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: inherit;
+  max-width: 320px;
+}
+
+.flight-status--loading,
+.flight-status--error {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.flight-status--error {
+  color: #b3261e;
+}
+
+.flight-status__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.flight-status__number {
+  font-weight: 600;
+}
+
+.flight-status__badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eee;
+  text-transform: capitalize;
+}
+
+.flight-status__badge--active { background: #d5f2d8; color: #1b6d2c; }
+.flight-status__badge--landed { background: #dbe9ff; color: #1a4a9e; }
+.flight-status__badge--cancelled,
+.flight-status__badge--diverted,
+.flight-status__badge--incident { background: #fbdcd9; color: #a3231b; }
+
+.flight-status__legs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flight-status__leg {
+  flex: 1;
+}
+
+.flight-status__airport {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.flight-status__time {
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.flight-status__meta {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.flight-status__arrow {
+  color: #999;
+}
+
+.flight-status__updated {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: #999;
+}
