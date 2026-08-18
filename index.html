@@ -245,44 +245,71 @@
         
         <section id="tab-expenses" class="tab-content">
           <div class="expenses-layout">
-            <div class="expenses-summary-bar">
-              <div class="exp-summary-card">
-                <span class="exp-summary-label">Total Joint Spent</span>
-                <span class="exp-summary-value" id="exp-total-spent">R 0.00</span>
+
+            <div class="exchange-rate-ticker" id="exchange-rate-ticker">
+              <div class="rate-ticker-left">
+                <span class="rate-ticker-icon">💱</span>
+                <div>
+                  <span class="rate-ticker-label">Live Exchange Rate</span>
+                  <span class="rate-ticker-value" id="exchange-rate-value">Loading…</span>
+                </div>
               </div>
-              <div class="exp-summary-card">
-                <span class="exp-summary-label">Kevin 1 (You) Paid</span>
-                <span class="exp-summary-value" id="exp-p1-paid">R 0.00</span>
-              </div>
-              <div class="exp-summary-card">
-                <span class="exp-summary-label">Kevin 2 (Kevin) Paid</span>
-                <span class="exp-summary-value" id="exp-p2-paid">R 0.00</span>
-              </div>
-              <div class="exp-summary-card accent" id="settlement-card">
-                <span class="exp-summary-label">Settlement Status</span>
-                <span class="exp-summary-value" id="exp-settlement">Settle up to calculate</span>
+              <div class="rate-ticker-right">
+                <span class="rate-ticker-updated" id="exchange-rate-updated"></span>
+                <button class="rate-refresh-btn" id="btn-refresh-rate" onclick="fetchExchangeRate()" title="Refresh rate">↻</button>
               </div>
             </div>
+
+            <div class="expenses-summary-bar">
+              <div class="exp-summary-card">
+                <span class="exp-summary-label">Total Spent So Far</span>
+                <span class="exp-summary-value" id="exp-total-spent">R 0.00</span>
+              </div>
+              <div class="exp-summary-card accent">
+                <span class="exp-summary-label">Nthabi Contributed</span>
+                <span class="exp-summary-value" id="exp-p1-paid">R 0.00</span>
+              </div>
+              <div class="exp-summary-card accent-owed">
+                <span class="exp-summary-label">Kevin Contributed</span>
+                <span class="exp-summary-value" id="exp-p2-paid">R 0.00</span>
+              </div>
+              <div class="exp-summary-card">
+                <span class="exp-summary-label">Remaining in Pool</span>
+                <span class="exp-summary-value" id="exp-remaining">R 0.00</span>
+              </div>
+              <div class="exp-summary-card accent" id="settlement-card">
+                <span class="exp-summary-label">Kevin's Balance</span>
+                <span class="exp-summary-value" id="exp-settlement">Even</span>
+              </div>
+            </div>
+
             <div class="expenses-body">
               <div class="expense-form-panel">
-                <h3>💰 Log New Payment</h3>
+                <h3>🤝 Contributions</h3>
+                <form id="update-contributions-form" onsubmit="handleContributionsSubmit(event)">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="contrib-nthabi">Nthabi Contributed (ZAR)</label>
+                      <input type="number" id="contrib-nthabi" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="contrib-kevin">Kevin Contributed (ZAR)</label>
+                      <input type="number" id="contrib-kevin" min="0" step="0.01" required>
+                    </div>
+                  </div>
+                  <button type="submit" class="submit-btn" id="btn-update-contributions">Update Contributions</button>
+                </form>
+
+                <h3 style="margin-top: 28px;">💰 Log New Payment</h3>
+                <p class="form-hint">Nthabi pays for everything from the shared pool — just log what was spent.</p>
                 <form id="add-expense-form" onsubmit="handleExpenseSubmit(event)">
                   <div class="form-group">
                     <label for="exp-desc">Description</label>
                     <input type="text" id="exp-desc" placeholder="e.g. Louvre Tickets, Paris Airbnb" required>
                   </div>
-                  <div class="form-row">
-                    <div class="form-group">
-                      <label for="exp-amount">Amount (ZAR)</label>
-                      <input type="number" id="exp-amount" min="1" step="0.01" placeholder="0.00" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="exp-paid-by">Paid By</label>
-                      <select id="exp-paid-by" required>
-                        <option value="Kevin 1">Kevin 1 (You)</option>
-                        <option value="Kevin 2">Kevin 2 (Kevin)</option>
-                      </select>
-                    </div>
+                  <div class="form-group">
+                    <label for="exp-amount">Amount (ZAR)</label>
+                    <input type="number" id="exp-amount" min="1" step="0.01" placeholder="0.00" required>
                   </div>
                   <div class="form-group">
                     <label for="exp-category">Category</label>

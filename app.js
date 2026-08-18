@@ -177,13 +177,14 @@ let routePolyline;
 let activeLegId = null;
 
 const defaultExpenses = [
-  { desc: "Flights JNB to CDG / FCO to JNB", amount: 24500, paidBy: "Brother 1", category: "Flights", date: "2026-06-15" },
-  { desc: "Paris Self-Catering Airbnb Deposit", amount: 6200, paidBy: "Brother 2", category: "Accommodation", date: "2026-06-18" },
-  { desc: "Louvre Advanced Group Tickets", amount: 980, paidBy: "Brother 1", category: "Sights", date: "2026-06-20" }
+  { desc: "Flights JNB to CDG / FCO to JNB", amount: 24500, category: "Flights", date: "2026-06-15" },
+  { desc: "Paris Self-Catering Airbnb Deposit", amount: 6200, category: "Accommodation", date: "2026-06-18" },
+  { desc: "Louvre Advanced Group Tickets", amount: 980, category: "Sights", date: "2026-06-20" }
 ];
 
 let expenses = JSON.parse(localStorage.getItem("trip_expenses")) || defaultExpenses;
 let bookingStates = JSON.parse(localStorage.getItem("booking_states")) || {};
+let contributions = JSON.parse(localStorage.getItem("trip_contributions")) || { nthabi: 70000, kevin: 43000 };
 
 const customSystemDate = new Date("2026-06-21T19:48:08");
 
@@ -200,6 +201,16 @@ document.addEventListener("DOMContentLoaded", () => {
   try { renderItineraryTimeline(); } catch(e) { console.log("Timeline layout waiting."); }
   try { renderBookingCalendar(); } catch(e) { console.log("Calendar waiting."); }
   try { renderExpenseSplitter(); } catch(e) { console.log("Expenses waiting."); }
+
+  const contribNthabiEl = document.getElementById("contrib-nthabi");
+  const contribKevinEl = document.getElementById("contrib-kevin");
+  if (contribNthabiEl) contribNthabiEl.value = contributions.nthabi;
+  if (contribKevinEl) contribKevinEl.value = contributions.kevin;
+
+  try {
+    fetchExchangeRate();
+    setInterval(fetchExchangeRate, 1000 * 60 * 60); // refresh once an hour
+  } catch(e) { console.log("Exchange rate ticker waiting."); }
   
   if (typeof renderDiningSection === 'function') {
     renderDiningSection();
@@ -594,13 +605,17 @@ function renderExpenseSplitter() {
     else if (exp.category === "Transit" || exp.category === "Flights") catIcon = "✈️";
     else if (exp.category === "Food") catIcon = "🍕";
     else if (exp.category === "Sights") catIcon = "🏛️";
+
+    const dateLabel = exp.date
+      ? new Date(exp.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+      : "";
     
     item.innerHTML = `
       <div class="ledger-item-left">
         <div class="category-icon">${catIcon}</div>
         <div class="ledger-item-info">
           <h4>${exp.desc}</h4>
-          <p>${exp.paidBy} paid | ${exp.category}</p>
+          <p>${exp.category}${dateLabel ? " | " + dateLabel : ""}</p>
         </div>
       </div>
       <div class="ledger-item-right">
@@ -616,60 +631,64 @@ function renderExpenseSplitter() {
 
 function updateExpenseStats() {
   let total = 0;
-  let p1Paid = 0;
-  let p2Paid = 0;
-  
   expenses.forEach(exp => {
-    const amt = parseFloat(exp.amount) || 0;
-    total += amt;
-    if (exp.paidBy === "Brother 1") {
-      p1Paid += amt;
-    } else {
-      p2Paid += amt;
-    }
+    total += parseFloat(exp.amount) || 0;
   });
-  
+
+  const nthabiAmt = parseFloat(contributions.nthabi) || 0;
+  const kevinAmt = parseFloat(contributions.kevin) || 0;
+  const pool = nthabiAmt + kevinAmt;
+  const remaining = pool - total;
+  const balance = nthabiAmt - kevinAmt; // positive = Kevin owes Nthabi to equalize contributions
+
+  const fmt = (n) => `R ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
   const totalSpentEl = document.getElementById("exp-total-spent");
   const p1PaidEl = document.getElementById("exp-p1-paid");
   const p2PaidEl = document.getElementById("exp-p2-paid");
+  const remainingEl = document.getElementById("exp-remaining");
 
-  if (totalSpentEl) totalSpentEl.textContent = `R ${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  if (p1PaidEl) p1PaidEl.textContent = `R ${p1Paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  if (p2PaidEl) p2PaidEl.textContent = `R ${p2Paid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  
+  if (totalSpentEl) totalSpentEl.textContent = fmt(total);
+  if (p1PaidEl) p1PaidEl.textContent = fmt(nthabiAmt);
+  if (p2PaidEl) p2PaidEl.textContent = fmt(kevinAmt);
+  if (remainingEl) {
+    remainingEl.textContent = remaining >= 0 ? fmt(remaining) : `-${fmt(Math.abs(remaining))}`;
+    remainingEl.style.color = remaining >= 0 ? "" : "var(--accent-rose)";
+  }
+
   const settlementCard = document.getElementById("settlement-card");
   const settlementEl = document.getElementById("exp-settlement");
-  
   if (!settlementEl) return;
 
-  if (total === 0) {
-    settlementEl.textContent = "Settle Up (R 0.00)";
-    if (settlementCard) settlementCard.className = "exp-summary-card accent";
-    return;
-  }
-  
-  const halfShare = total / 2;
-  
-  if (p1Paid === p2Paid) {
-    settlementEl.textContent = "Perfectly Split!";
+  if (balance === 0) {
+    settlementEl.textContent = "Even";
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
-  } else if (p1Paid > halfShare) {
-    const diff = p1Paid - halfShare;
-    settlementEl.textContent = `Brother owes you R ${diff.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  } else if (balance > 0) {
+    settlementEl.textContent = `Kevin owes Nthabi ${fmt(balance)}`;
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else {
-    const diff = p2Paid - halfShare;
-    settlementEl.textContent = `You owe Brother R ${diff.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    settlementEl.textContent = `Nthabi owes Kevin ${fmt(Math.abs(balance))}`;
     if (settlementCard) settlementCard.className = "exp-summary-card accent";
   }
 }
+
+window.handleContributionsSubmit = function(event) {
+  event.preventDefault();
+  const nthabiVal = parseFloat(document.getElementById("contrib-nthabi").value);
+  const kevinVal = parseFloat(document.getElementById("contrib-kevin").value);
+
+  if (isNaN(nthabiVal) || isNaN(kevinVal) || nthabiVal < 0 || kevinVal < 0) return;
+
+  contributions = { nthabi: nthabiVal, kevin: kevinVal };
+  localStorage.setItem("trip_contributions", JSON.stringify(contributions));
+  updateExpenseStats();
+};
 
 window.handleExpenseSubmit = function(event) {
   event.preventDefault();
   
   const desc = document.getElementById("exp-desc").value.trim();
   const amount = parseFloat(document.getElementById("exp-amount").value);
-  const paidBy = document.getElementById("exp-paid-by").value;
   const category = document.getElementById("exp-category").value;
   
   if (!desc || isNaN(amount) || amount <= 0) return;
@@ -677,7 +696,6 @@ window.handleExpenseSubmit = function(event) {
   const newExpense = {
     desc: desc,
     amount: amount,
-    paidBy: paidBy,
     category: category,
     date: new Date().toISOString().split('T')[0]
   };
@@ -703,4 +721,38 @@ window.clearExpenses = function() {
     localStorage.removeItem("trip_expenses");
     renderExpenseSplitter();
   }
+};
+
+// --- LIVE EXCHANGE RATE TICKER (ZAR -> EUR) ---
+// Uses Frankfurter (European Central Bank data), a free, keyless, CORS-enabled API.
+window.fetchExchangeRate = function() {
+  const valueEl = document.getElementById("exchange-rate-value");
+  const updatedEl = document.getElementById("exchange-rate-updated");
+  if (!valueEl) return;
+
+  valueEl.textContent = "Loading…";
+
+  fetch("https://api.frankfurter.app/latest?from=ZAR&to=EUR")
+    .then((res) => {
+      if (!res.ok) throw new Error("Rate request failed");
+      return res.json();
+    })
+    .then((data) => {
+      const rate = data && data.rates && data.rates.EUR;
+      if (!rate) throw new Error("Unexpected response");
+
+      const eurPerRand = rate;
+      const randPerEur = 1 / rate;
+
+      valueEl.textContent = `R 1 = €${eurPerRand.toFixed(4)}  |  €1 = R ${randPerEur.toFixed(2)}`;
+
+      if (updatedEl) {
+        const now = new Date();
+        updatedEl.textContent = `Updated ${now.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}`;
+      }
+    })
+    .catch(() => {
+      valueEl.textContent = "Rate unavailable — check connection";
+      if (updatedEl) updatedEl.textContent = "";
+    });
 };
