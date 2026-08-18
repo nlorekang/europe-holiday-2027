@@ -564,7 +564,7 @@ window.selectMealCity = function(legId) {
       <div class="meal-card" style="background-image: linear-gradient(180deg, rgba(15,15,15,0.55) 0%, rgba(15,15,15,0.9) 100%), url('${leg.heroImage}'); background-size: cover; background-position: center;">
         <div class="meal-card-header">
           <span class="meal-type">Lunch</span>
-          <span class="meal-time">Midday</span>
+          <span class="meal-time">Afternoon</span>
         </div>
         <p>${leg.dining.lunch}</p>
         <div class="market-highlights">
