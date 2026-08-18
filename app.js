@@ -176,11 +176,7 @@ let markers = [];
 let routePolyline;
 let activeLegId = null;
 
-const defaultExpenses = [
-  { desc: "Flights JNB to CDG / FCO to JNB", amount: 24500, category: "Flights", date: "2026-06-15" },
-  { desc: "Paris Self-Catering Airbnb Deposit", amount: 6200, category: "Accommodation", date: "2026-06-18" },
-  { desc: "Louvre Advanced Group Tickets", amount: 980, category: "Sights", date: "2026-06-20" }
-];
+const defaultExpenses = [];
 
 let expenses = JSON.parse(localStorage.getItem("trip_expenses")) || defaultExpenses;
 let bookingStates = JSON.parse(localStorage.getItem("booking_states")) || {};
