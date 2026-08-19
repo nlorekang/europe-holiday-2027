@@ -176,13 +176,48 @@ let markers = [];
 let routePolyline;
 let activeLegId = null;
 
-const defaultExpenses = [];
-
-let expenses = JSON.parse(localStorage.getItem("trip_expenses")) || defaultExpenses;
-let bookingStates = JSON.parse(localStorage.getItem("booking_states")) || {};
-let contributions = JSON.parse(localStorage.getItem("trip_contributions")) || { nthabi: 70000, kevin: 43000 };
+let expenses = [];
+let bookingStates = {};
+let contributions = { nthabi: 70000, kevin: 43000 };
 
 const customSystemDate = new Date("2026-06-21T19:48:08");
+
+// --- FIRESTORE SYNC (shared data between Nthabi's and Kevin's devices) ---
+// Everything lives in one document, trip/shared. Firestore pushes live
+// updates to every open tab/device via onSnapshot, so the ledger and
+// booking checkmarks stay in sync without anyone refreshing.
+const tripDocRef = db.collection("trip").doc("shared");
+
+tripDocRef.onSnapshot((docSnap) => {
+  if (docSnap.exists) {
+    const data = docSnap.data();
+    expenses = data.expenses || [];
+    bookingStates = data.bookingStates || {};
+    contributions = data.contributions || { nthabi: 70000, kevin: 43000 };
+  } else {
+    // First device to ever load the app — seed the shared document.
+    tripDocRef.set({ expenses, bookingStates, contributions });
+  }
+
+  // Re-render whatever is currently on screen so both devices update live.
+  try { renderBookingCalendar(); } catch (e) {}
+  try { renderExpenseSplitter(); } catch (e) {}
+
+  const contribNthabiEl = document.getElementById("contrib-nthabi");
+  const contribKevinEl = document.getElementById("contrib-kevin");
+  if (contribNthabiEl && document.activeElement !== contribNthabiEl) contribNthabiEl.value = contributions.nthabi;
+  if (contribKevinEl && document.activeElement !== contribKevinEl) contribKevinEl.value = contributions.kevin;
+}, (err) => {
+  console.error("Firestore sync error:", err);
+});
+
+// Merges a partial update (e.g. { expenses } or { bookingStates }) into
+// the shared trip document. Other devices pick it up via onSnapshot above.
+function saveTripData(partial) {
+  tripDocRef.set(partial, { merge: true }).catch((err) => {
+    console.error("Firestore save error:", err);
+  });
+}
 
 // --- INITIALIZE ON LOAD ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -524,7 +559,7 @@ function renderBookingCalendar() {
 
 window.toggleBookingState = function(itemId) {
   bookingStates[itemId] = !bookingStates[itemId];
-  localStorage.setItem("booking_states", JSON.stringify(bookingStates));
+  saveTripData({ bookingStates });
   renderBookingCalendar();
 };
 
@@ -676,7 +711,7 @@ window.handleContributionsSubmit = function(event) {
   if (isNaN(nthabiVal) || isNaN(kevinVal) || nthabiVal < 0 || kevinVal < 0) return;
 
   contributions = { nthabi: nthabiVal, kevin: kevinVal };
-  localStorage.setItem("trip_contributions", JSON.stringify(contributions));
+  saveTripData({ contributions });
   updateExpenseStats();
 };
 
@@ -697,7 +732,7 @@ window.handleExpenseSubmit = function(event) {
   };
   
   expenses.push(newExpense);
-  localStorage.setItem("trip_expenses", JSON.stringify(expenses));
+  saveTripData({ expenses });
   
   const form = document.getElementById("add-expense-form");
   if (form) form.reset();
@@ -707,14 +742,14 @@ window.handleExpenseSubmit = function(event) {
 
 window.deleteExpense = function(index) {
   expenses.splice(index, 1);
-  localStorage.setItem("trip_expenses", JSON.stringify(expenses));
+  saveTripData({ expenses });
   renderExpenseSplitter();
 };
 
 window.clearExpenses = function() {
   if (confirm("Are you sure you want to clear the entire expense ledger?")) {
     expenses = [];
-    localStorage.removeItem("trip_expenses");
+    saveTripData({ expenses });
     renderExpenseSplitter();
   }
 };
