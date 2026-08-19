@@ -370,6 +370,11 @@ window.switchTab = function(tabId) {
     if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "Ideas & Notes";
     document.getElementById("current-view-subtitle").textContent = "A shared space for anything either of you wants to flag.";
+  } else if (tabId === "tab-photos") {
+    const btn = document.getElementById("btn-photos");
+    if (btn) btn.classList.add("active");
+    document.getElementById("current-view-title").textContent = "Trip Photos";
+    document.getElementById("current-view-subtitle").textContent = `Shared photo dump for ${currentPhotoCity}.`;
   }
 };
 
@@ -1049,5 +1054,124 @@ window.handleCommentSubmit = function(event) {
 window.deleteComment = function(commentId) {
   db.collection("comments").doc(commentId).delete().catch((err) => {
     console.error("Failed to delete note:", err);
+  });
+};
+
+// --- PHOTOS TAB (Cloudinary + Firestore) ---
+
+let currentPhotoCity = "Paris"; // defaults to the first trip city
+let unsubscribePhotos = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const switcher = document.getElementById("photo-city-switcher");
+  if (switcher) {
+    switcher.querySelectorAll(".city-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        switcher.querySelectorAll(".city-chip").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentPhotoCity = btn.dataset.city;
+        const subtitle = document.getElementById("current-view-subtitle");
+        if (subtitle) subtitle.textContent = `Shared photo dump for ${currentPhotoCity}.`;
+        loadPhotosForCity(currentPhotoCity);
+      });
+    });
+  }
+
+  const uploadInput = document.getElementById("photo-upload-input");
+  if (uploadInput) {
+    uploadInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const uploader = document.getElementById("photo-uploader").value;
+      const statusEl = document.getElementById("photo-upload-status");
+      statusEl.textContent = "Uploading...";
+
+      try {
+        await uploadPhoto(file, currentPhotoCity, uploader);
+        statusEl.textContent = "Uploaded!";
+        setTimeout(() => (statusEl.textContent = ""), 2000);
+      } catch (err) {
+        console.error("Photo upload failed:", err);
+        statusEl.textContent = "Upload failed. Please try again.";
+      }
+
+      e.target.value = ""; // allows re-selecting the same file later
+    });
+  }
+
+  // Load the default city's gallery as soon as Firestore is ready
+  loadPhotosForCity(currentPhotoCity);
+});
+
+async function uploadPhoto(file, city, uploader) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("folder", `eurotrip2027/${city.toLowerCase()}`);
+
+  const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Cloudinary upload failed (${response.status})`);
+  }
+
+  const data = await response.json();
+
+  await db.collection("photos").add({
+    city: city,
+    uploader: uploader,
+    imageUrl: data.secure_url,
+    publicId: data.public_id,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
+
+function loadPhotosForCity(city) {
+  const gallery = document.getElementById("photo-gallery");
+  if (!gallery) return;
+
+  if (unsubscribePhotos) unsubscribePhotos();
+
+  unsubscribePhotos = db
+    .collection("photos")
+    .where("city", "==", city)
+    .orderBy("createdAt", "desc")
+    .onSnapshot((snapshot) => {
+      gallery.innerHTML = "";
+
+      if (snapshot.empty) {
+        gallery.innerHTML = `<p class="photo-empty" style="color: var(--text-muted);">No photos yet for ${city} — be the first to add one.</p>`;
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const photo = doc.data();
+        const card = document.createElement("div");
+        card.className = "photo-card";
+        card.innerHTML = `
+          <img src="${photo.imageUrl}" alt="Photo from ${escapeHtml(photo.city || "")}" loading="lazy">
+          <div class="photo-meta">
+            <span>${escapeHtml(photo.uploader || "")}</span>
+            <button class="delete-photo-btn" onclick="deletePhoto('${doc.id}')" title="Delete photo">✕</button>
+          </div>
+        `;
+        gallery.appendChild(card);
+      });
+    }, (err) => {
+      console.error("Photos sync error:", err);
+    });
+}
+
+window.deletePhoto = function(photoId) {
+  // Removes the photo from the shared gallery (Firestore). The file stays
+  // in Cloudinary's library for now — deleting it there requires a signed
+  // request, which we'll add as a small follow-up step if you want fully
+  // clean storage.
+  db.collection("photos").doc(photoId).delete().catch((err) => {
+    console.error("Failed to delete photo:", err);
   });
 };
