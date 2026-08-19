@@ -186,15 +186,6 @@
               <h2>Sibling Vacation 2027</h2>
               <p>20 Days | 5 Cities | A Linear Cross-Border European Itinerary</p>
             </div>
-
-            <div class="flight-status-card">
-              <h3>✈️ Live Flight Status</h3>
-              <div class="flight-status-input-row">
-                <input type="text" id="flight-status-input" placeholder="Enter flight number, e.g. EK762" autocapitalize="characters">
-                <button onclick="checkFlightStatus()">Check</button>
-              </div>
-              <div id="flight-status-result" class="flight-status-result"></div>
-            </div>
             <div class="gallery-grid">
               <div class="gallery-card" onclick="selectCityFromHome('leg-paris')">
                 <div class="gallery-card-img" style="background-image: url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80')"></div>
@@ -279,6 +270,16 @@
         
         <section id="tab-calendar" class="tab-content">
           <div class="calendar-layout">
+
+            <div class="flight-status-card">
+              <h3>✈️ Live Flight Status</h3>
+              <div class="flight-status-input-row">
+                <input type="text" id="flight-status-input" placeholder="Enter flight number, e.g. EK762" autocapitalize="characters">
+                <button onclick="checkFlightStatus()">Check</button>
+              </div>
+              <div id="flight-status-result" class="flight-status-result"></div>
+            </div>
+
             <div class="calendar-intro-card">
               <div class="intro-text">
                 <h3>📅 Advance Booking Windows</h3>
