@@ -246,6 +246,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof renderDiningSection === 'function') {
     renderDiningSection();
   }
+
+  if (typeof renderDailyItinerary === 'function') {
+    renderDailyItinerary();
+  }
   
   startBackgroundSlideshow();
   runTripCountdown();
@@ -341,6 +345,11 @@ window.switchTab = function(tabId) {
     document.getElementById("current-view-title").textContent = "Interactive Map & Route";
     document.getElementById("current-view-subtitle").textContent = "Explore our linear European route and legs.";
     if (map) setTimeout(() => { map.invalidateSize(); }, 150);
+  } else if (tabId === "tab-itinerary") {
+    const btn = document.getElementById("btn-itinerary");
+    if (btn) btn.classList.add("active");
+    document.getElementById("current-view-title").textContent = "Daily Itinerary";
+    document.getElementById("current-view-subtitle").textContent = "Hour-by-hour plan for all 21 days, from Johannesburg to Rome.";
   } else if (tabId === "tab-calendar") {
     const btn = document.getElementById("btn-calendar");
     if (btn) btn.classList.add("active");
@@ -626,6 +635,176 @@ window.selectMealCity = function(legId) {
   `;
 };
 
+// --- DAILY ITINERARY MODULE ---
+// Full hour-by-hour schedule, 18 September - 8 October 2027.
+const itineraryData = [
+  { id: "d1", date: "18 Sep", city: "France", title: "Departure from Johannesburg", events: [
+    { time: "11:00 AM", desc: "Collect luggage, finalise travel documents, and arrive at O.R. Tambo International Airport." },
+    { time: "1:30 PM", desc: "Flight departs from Johannesburg." },
+    { time: "10:45 PM", desc: "Arrive in Dubai for a late-night international transit layover." }
+  ]},
+  { id: "d2", date: "19 Sep", city: "France", title: "Arrival in Paris & Historical Core", events: [
+    { time: "Morning", desc: "Land in Paris, clear immigration, and check into your accommodation." },
+    { time: "1:00 PM", desc: "Explore the Latin Quarter, walking past the Sorbonne and down the vibrant Rue Mouffetard." },
+    { time: "3:00 PM", desc: "View the exterior architectural restoration progress of Notre Dame Cathedral." },
+    { time: "5:30 PM", desc: "Take an hour-long sunset Seine River Cruise departing near the historical centre." }
+  ]},
+  { id: "d3", date: "20 Sep", city: "France", title: "Art Masterpieces & Iconic Landmarks", events: [
+    { time: "9:00 AM", desc: "Enter The Louvre via the Carousel entrance to beat crowds; target the Denon Wing for top masterpieces." },
+    { time: "2:30 PM", desc: "Take a casual afternoon City Bus Tour to see the Champs-Élysées and Place de la Concorde." },
+    { time: "5:00 PM", desc: "Ride to the top of the Eiffel Tower (book the final elevator slot ahead of time for golden hour)." }
+  ]},
+  { id: "d4", date: "21 Sep", city: "France", title: "Royal Palaces & Military Tributes", events: [
+    { time: "8:30 AM", desc: "Take the RER C train from central Paris out to the suburban Palace of Versailles." },
+    { time: "9:00 AM", desc: "Tour the Hall of Mirrors and grand state apartments before exploring the vast gardens." },
+    { time: "3:30 PM", desc: "Return to the city centre and ascend to the rooftop of the Arc de Triomphe for panoramic views." }
+  ]},
+  { id: "d5", date: "22 Sep", city: "France", title: "Day Trip to Reims Champagne Region", events: [
+    { time: "8:00 AM", desc: "Board a high-speed TGV train from Gare de l'Est to Reims (45-minute travel time)." },
+    { time: "9:30 AM", desc: "Visit the historic Reims Cathedral, where French kings were traditionally crowned." },
+    { time: "11:30 AM", desc: "Tour local Champagne houses (like Taittinger or Veuve Clicquot) for chalk cellar viewings and tastings." },
+    { time: "6:00 PM", desc: "Return to Paris by rail for your final evening in France." }
+  ]},
+  { id: "d6", date: "23 Sep", city: "Venice", title: "Flight to Venice & Grand Canal Entry", events: [
+    { time: "Morning", desc: "Flight from Paris to Venice Marco Polo Airport, followed by a water bus (Alilaguna) into the lagoon." },
+    { time: "2:00 PM", desc: "Tour the Venetian-Gothic architecture of Doge's Palace and cross the Bridge of Sighs." },
+    { time: "4:00 PM", desc: "Step inside the golden mosaics of St. Mark's Basilica." },
+    { time: "6:30 PM", desc: "Experience a classic Gondola Ride through the quiet back canals, followed by an evening opera performance." }
+  ]},
+  { id: "d7", date: "24 Sep", city: "Venice", title: "Alpine Day Trip to the Dolomites", events: [
+    { time: "7:30 AM", desc: "Depart on a full-day guided coach tour or rental drive north towards the Dolomites." },
+    { time: "10:30 AM", desc: "Stop at the picturesque Lake Misurina and view the dramatic peaks of Tre Cime di Lavaredo." },
+    { time: "2:00 PM", desc: "Walk through the alpine resort town of Cortina d'Ampezzo before returning to Venice." }
+  ]},
+  { id: "d8", date: "25 Sep", city: "Venice", title: "Lagoon Islands & Renaissance Art", events: [
+    { time: "9:00 AM", desc: "Take a Vaporetto boat north to Murano for glassblowing, then to Burano for its brightly painted houses." },
+    { time: "3:00 PM", desc: "Return to Venice proper to view the monumental mannerist art collections at Palazzo Grimani." }
+  ]},
+  { id: "d9", date: "26 Sep", city: "Florence", title: "Rail to Florence & Renaissance Panoramas", events: [
+    { time: "8:30 AM", desc: "Board a Frecciarossa high-speed train from Venezia Santa Lucia to Firenze Santa Maria Novella (2 hours)." },
+    { time: "11:30 AM", desc: "Walk through the heart of the city to view the marble facade of Piazza del Duomo." },
+    { time: "2:00 PM", desc: "View Renaissance fine arts (including Botticelli's work) at the world-renowned Uffizi Gallery." },
+    { time: "5:30 PM", desc: "Walk up to Piazzale Michelangelo to watch the sunset over the Arno River and Florentine rooftops." }
+  ]},
+  { id: "d10", date: "27 Sep", city: "Florence", title: "Leonardo's Trails & Tuscan Wine", events: [
+    { time: "8:30 AM", desc: "Travel slightly north to Fiesole to hike the Monte Ceceri Trails, where Leonardo da Vinci tested his flying machines." },
+    { time: "1:00 PM", desc: "Head south into the countryside for an afternoon Chianti Wine Tasting at a historic estate." }
+  ]},
+  { id: "d11", date: "28 Sep", city: "Florence", title: "Local Markets & Tuscan Day Trip", events: [
+    { time: "8:30 AM", desc: "Explore the bustling ground floor of Mercato Centrale for local cheeses, cured meats, and fresh pastries." },
+    { time: "10:30 AM", desc: "Take a regional train to Pisa to see the Leaning Tower, then continue to the medieval walled city of Lucca." },
+    { time: "6:00 PM", desc: "Return to Florence for a relaxed dinner." }
+  ]},
+  { id: "d12", date: "29 Sep", city: "Florence", title: "Famous Sculptures & Regal Gardens", events: [
+    { time: "9:00 AM", desc: "Stand before Michelangelo's original Statue of David inside the Galleria dell'Accademia." },
+    { time: "12:00 PM", desc: "Head back to Mercato Centrale's top floor food court for an upscale artisanal lunch." },
+    { time: "2:30 PM", desc: "Cross the Ponte Vecchio to explore the expansive Renaissance sculptures and landscaping of the Boboli Gardens." }
+  ]},
+  { id: "d13", date: "30 Sep", city: "Naples", title: "Transit to Naples & Underground Exploration", events: [
+    { time: "8:00 AM", desc: "High-speed train south from Florence to Napoli Centrale (under 3 hours)." },
+    { time: "11:30 AM", desc: "Walk the ancient street grid of Spaccanapoli and see the majolica tiled cloister of Santa Chiara." },
+    { time: "2:00 PM", desc: "View the incredible Veiled Christ sculpture inside the Sansevero Chapel Museum (advance booking strictly required)." },
+    { time: "4:00 PM", desc: "Walk past the artisan workshops of Via San Gregorio Armeno, then descend 40 metres deep for a tour of Naples Underground." }
+  ]},
+  { id: "d14", date: "1 Oct", city: "Naples", title: "Ancient Volcanoes & Archeology", events: [
+    { time: "8:30 AM", desc: "Take the Circumvesuviana train out to the ancient, preserved Roman city at the Pompeii Ruins." },
+    { time: "2:00 PM", desc: "Take a shuttle bus up the slopes of Mount Vesuvius and hike up to the crater rim." }
+  ]},
+  { id: "d15", date: "2 Oct", city: "Naples", title: "Clifftop Coastal Gateway & Cooking", events: [
+    { time: "9:00 AM", desc: "Travel further south on the rail line to the coastal clifftop town of Sorrento." },
+    { time: "1:00 PM", desc: "Explore the historical center and lemon groves." },
+    { time: "5:00 PM", desc: "Join an interactive authentic Neapolitan Pizza Making Class for dinner." }
+  ]},
+  { id: "d16", date: "3 Oct", city: "Naples", title: "Dramatic Coastal Roadways", events: [
+    { time: "8:30 AM", desc: "Board a regional ferry or a scenic coastal bus heading directly along the cliffside to Amalfi." },
+    { time: "11:00 AM", desc: "Visit the Cathedral of St. Andrew, then relax along the beachfront before exploring the mountain paths of Positano." }
+  ]},
+  { id: "d17", date: "4 Oct", city: "Naples", title: "Glamorous Island Excursion", events: [
+    { time: "8:30 AM", desc: "Catch a morning jetfoil ferry from the coast out to the rugged Island of Capri." },
+    { time: "10:00 AM", desc: "Take a boat excursion around the island to see the Faraglioni rocks, or ride the chairlift up Mount Solaro." }
+  ]},
+  { id: "d18", date: "5 Oct", city: "Rome", title: "Rome Arrival & Baroque Squares", events: [
+    { time: "9:00 AM", desc: "Travel from the Campania region up to Roma Termini station via high-speed rail (70 minutes)." },
+    { time: "1:00 PM", desc: "Walk through Rome's historic center to view the architectural marvel of the Pantheon and toss a coin into the Trevi Fountain." },
+    { time: "3:30 PM", desc: "Walk over to sit by the Spanish Steps and explore the fountains of Piazza Navona." }
+  ]},
+  { id: "d19", date: "6 Oct", city: "Rome", title: "Vatican Sovereignty & Papal Events", events: [
+    { time: "8:30 AM", desc: "Head to St. Peter's Square to secure a spot for the weekly Papal Audience (held on Wednesday mornings)." },
+    { time: "1:30 PM", desc: "Tour the vast collections of the Vatican Museums, ending inside the Sistine Chapel." },
+    { time: "4:30 PM", desc: "Step inside the massive interior of St. Peter's Basilica." }
+  ]},
+  { id: "d20", date: "7 Oct", city: "Rome", title: "Imperial Antiquities & Bohemian Nights", events: [
+    { time: "8:30 AM", desc: "Walk through the ancient amphitheatre of the Colosseum, then explore the ruins of the Roman Forum and Palatine Hill." },
+    { time: "3:00 PM", desc: "Cross the Tiber River to explore the narrow cobblestone alleyways of the bohemian Trastevere neighbourhood." }
+  ]},
+  { id: "d21", date: "8 Oct", city: "Rome", title: "Master Sculptures & Homeward Flight", events: [
+    { time: "9:00 AM", desc: "Tour the Bernini sculptures and Caravaggio paintings inside the Galleria Borghese (entry slots strictly timed, book weeks in advance)." },
+    { time: "2:00 PM", desc: "Pick up your luggage and head out to Leonardo da Vinci–Fiumicino Airport (FCO)." },
+    { time: "10:10 PM", desc: "Homeward flight departs from FCO airport back towards South Africa." }
+  ]}
+];
+
+function renderDailyItinerary() {
+  const picker = document.getElementById("itinerary-day-picker");
+  if (!picker) return;
+
+  picker.innerHTML = "";
+
+  // Group consecutive days by city so the picker reads as Paris -> Venice -> Florence -> Naples -> Rome
+  let currentCity = null;
+  let groupEl = null;
+
+  itineraryData.forEach((day) => {
+    if (day.city !== currentCity) {
+      currentCity = day.city;
+      groupEl = document.createElement("div");
+      groupEl.className = "itinerary-city-group";
+      const label = document.createElement("div");
+      label.className = "itinerary-city-label";
+      label.textContent = currentCity;
+      groupEl.appendChild(label);
+      picker.appendChild(groupEl);
+    }
+
+    const btn = document.createElement("button");
+    btn.className = "itinerary-day-btn" + (day.id === "d1" ? " active" : "");
+    btn.id = `itinerary-pill-${day.id}`;
+    btn.onclick = () => selectItineraryDay(day.id);
+    btn.innerHTML = `<span class="day-date">${day.date}</span><span class="day-title">${day.title}</span>`;
+    groupEl.appendChild(btn);
+  });
+
+  selectItineraryDay("d1");
+}
+
+window.selectItineraryDay = function(dayId) {
+  document.querySelectorAll(".itinerary-day-btn").forEach(btn => btn.classList.remove("active"));
+  const activeBtn = document.getElementById(`itinerary-pill-${dayId}`);
+  if (activeBtn) activeBtn.classList.add("active");
+
+  const day = itineraryData.find(d => d.id === dayId);
+  const pane = document.getElementById("itinerary-details-pane");
+  if (!day || !pane) return;
+
+  const eventsHtml = day.events.map(ev => `
+    <div class="itinerary-event">
+      <div class="itinerary-event-dot"></div>
+      <div class="itinerary-event-time">${ev.time}</div>
+      <div class="itinerary-event-desc">${ev.desc}</div>
+    </div>
+  `).join("");
+
+  pane.innerHTML = `
+    <div class="meals-pane-header">
+      <h3>${day.date} — ${day.title}</h3>
+      <p>${day.city}</p>
+    </div>
+    <div class="itinerary-timeline">
+      ${eventsHtml}
+    </div>
+  `;
+};
+
 // --- EXPENSE SPLITTER MODULE ---
 function renderExpenseSplitter() {
   const list = document.getElementById("expense-ledger-list");
@@ -700,7 +879,7 @@ function updateExpenseStats() {
     settlementEl.textContent = "Even";
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else if (balance > 0) {
-    settlementEl.textContent = `-${fmt(balance)}`;
+    settlementEl.textContent = `Kevin owes Nthabi ${fmt(balance)}`;
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else {
     settlementEl.textContent = `Nthabi owes Kevin ${fmt(Math.abs(balance))}`;

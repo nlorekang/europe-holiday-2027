@@ -827,6 +827,129 @@ button, input, select, textarea {
   gap: 24px;
 }
 
+/* --- DAILY ITINERARY --- */
+.itinerary-sidebar {
+  overflow-y: auto;
+  max-height: 720px;
+}
+
+.itinerary-city-group {
+  margin-bottom: 18px;
+}
+
+.itinerary-city-group:last-child {
+  margin-bottom: 0;
+}
+
+.itinerary-city-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-orange);
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+
+.itinerary-day-btn {
+  padding: 10px 16px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  text-align: left;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  transition: all 0.2s ease;
+  margin-bottom: 6px;
+}
+
+.itinerary-day-btn:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--text-muted);
+}
+
+.itinerary-day-btn.active {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 1px var(--accent-orange);
+}
+
+.itinerary-day-btn .day-date {
+  font-weight: 600;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.itinerary-day-btn .day-title {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.itinerary-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.itinerary-event {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 24px;
+  position: relative;
+}
+
+.itinerary-event:last-child {
+  padding-bottom: 0;
+}
+
+.itinerary-event::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 20px;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--border-color);
+}
+
+.itinerary-event:last-child::before {
+  display: none;
+}
+
+.itinerary-event-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background-color: var(--accent-orange);
+  margin-top: 4px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.itinerary-event-time {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-orange);
+  width: 76px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.itinerary-event-desc {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
 .meals-pane-header {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 16px;
