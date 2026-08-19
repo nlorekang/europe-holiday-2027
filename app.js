@@ -700,7 +700,7 @@ function updateExpenseStats() {
     settlementEl.textContent = "Even";
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else if (balance > 0) {
-    settlementEl.textContent = `Kevin owes Nthabi ${fmt(balance)}`;
+    settlementEl.textContent = `-${fmt(balance)}`;
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else {
     settlementEl.textContent = `Nthabi owes Kevin ${fmt(Math.abs(balance))}`;
