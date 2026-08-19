@@ -356,6 +356,11 @@ window.switchTab = function(tabId) {
     if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "Expense Splitter";
     document.getElementById("current-view-subtitle").textContent = "Track joint vacation costs and calculate splits.";
+  } else if (tabId === "tab-notes") {
+    const btn = document.getElementById("btn-notes");
+    if (btn) btn.classList.add("active");
+    document.getElementById("current-view-title").textContent = "Ideas & Notes";
+    document.getElementById("current-view-subtitle").textContent = "A shared space for anything either of you wants to flag.";
   }
 };
 
@@ -786,4 +791,77 @@ window.fetchExchangeRate = function() {
       valueEl.textContent = "Rate unavailable — check connection";
       if (updatedEl) updatedEl.textContent = "";
     });
+};
+
+// --- IDEAS & NOTES MODULE ---
+// Comments live in their own Firestore collection (not the trip/shared doc)
+// since they grow open-endedly — each note is its own document, newest first.
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+const commentsRef = db.collection("comments").orderBy("createdAt", "desc");
+
+commentsRef.onSnapshot((snapshot) => {
+  const list = document.getElementById("notes-list");
+  if (!list) return;
+  list.innerHTML = "";
+
+  if (snapshot.empty) {
+    list.innerHTML = '<li class="ledger-item-row" style="justify-content:center; color: var(--text-muted);">No notes yet — be the first to add one.</li>';
+    return;
+  }
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    const when = data.createdAt
+      ? data.createdAt.toDate().toLocaleString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : "Just now";
+
+    const item = document.createElement("li");
+    item.className = "ledger-item-row";
+    item.innerHTML = `
+      <div class="ledger-item-left">
+        <div class="category-icon">${data.author === "Kevin" ? "🧔" : "👩"}</div>
+        <div class="ledger-item-info note-item-info">
+          <h4>${escapeHtml(data.author || "Unknown")}</h4>
+          <p>${escapeHtml(data.text || "")}</p>
+          <p class="note-meta">${when}</p>
+        </div>
+      </div>
+      <div class="ledger-item-right">
+        <button class="delete-expense-btn" onclick="deleteComment('${doc.id}')" title="Delete note">✕</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}, (err) => {
+  console.error("Comments sync error:", err);
+});
+
+window.handleCommentSubmit = function(event) {
+  event.preventDefault();
+
+  const author = document.getElementById("comment-author").value;
+  const text = document.getElementById("comment-text").value.trim();
+
+  if (!text) return;
+
+  db.collection("comments").add({
+    author: author,
+    text: text,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch((err) => console.error("Failed to post note:", err));
+
+  const form = document.getElementById("add-comment-form");
+  if (form) form.reset();
+};
+
+window.deleteComment = function(commentId) {
+  db.collection("comments").doc(commentId).delete().catch((err) => {
+    console.error("Failed to delete note:", err);
+  });
 };
