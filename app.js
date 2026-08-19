@@ -774,10 +774,10 @@ function renderDailyItinerary() {
     groupEl.appendChild(btn);
   });
 
-  selectItineraryDay("d1");
+  selectItineraryDay("d1", false);
 }
 
-window.selectItineraryDay = function(dayId) {
+window.selectItineraryDay = function(dayId, userInitiated = true) {
   document.querySelectorAll(".itinerary-day-btn").forEach(btn => btn.classList.remove("active"));
   const activeBtn = document.getElementById(`itinerary-pill-${dayId}`);
   if (activeBtn) activeBtn.classList.add("active");
@@ -803,6 +803,13 @@ window.selectItineraryDay = function(dayId) {
       ${eventsHtml}
     </div>
   `;
+
+  // On narrow/mobile layouts the picker and detail pane stack vertically,
+  // so bring the newly selected day's detail into view automatically —
+  // but only when the user actually tapped a day, not on initial load.
+  if (userInitiated && window.innerWidth <= 1024) {
+    pane.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 };
 
 // --- EXPENSE SPLITTER MODULE ---
