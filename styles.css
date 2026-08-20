@@ -1246,6 +1246,7 @@ button, input, select, textarea {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  align-items: end;
 }
 
 .submit-btn {
@@ -1874,5 +1875,9 @@ body.app-entered .app-container {
   .checkbox-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .photos-page {
+    padding: 16px;
   }
 }
