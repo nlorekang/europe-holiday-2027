@@ -110,63 +110,72 @@ const bookingItems = [
     desc: "International Flights (JNB to CDG, FCO to JNB)",
     category: "flight",
     windowText: "11 Months Prior",
-    openDate: "2026-10-20"
+    openDate: "2026-10-20",
+    bookingUrl: "https://www.google.com/travel/flights"
   },
   {
     id: "book-paris-flight",
     desc: "Paris (CDG) to Venice (VCE) Budget Flight",
     category: "flight",
     windowText: "8 Months Prior",
-    openDate: "2027-01-24"
+    openDate: "2027-01-24",
+    bookingUrl: "https://www.google.com/travel/flights"
   },
   {
     id: "book-train-ven-flo",
     desc: "High-Speed Train: Venice to Florence",
     category: "transit",
     windowText: "4 Months Prior",
-    openDate: "2027-05-27"
+    openDate: "2027-05-27",
+    bookingUrl: "https://www.trenitalia.com/en.html"
   },
   {
     id: "book-train-flo-rom",
     desc: "High-Speed Train: Florence to Naples",
     category: "transit",
     windowText: "4 Months Prior",
-    openDate: "2027-06-11"
+    openDate: "2027-06-11",
+    bookingUrl: "https://www.trenitalia.com/en.html"
   },
   {
     id: "book-train-rom-nap",
     desc: "High-Speed Train: Naples to Rome",
     category: "transit",
     windowText: "4 Months Prior",
-    openDate: "2027-06-16"
+    openDate: "2027-06-16",
+    bookingUrl: "https://www.trenitalia.com/en.html"
   },
   {
     id: "book-louvre",
     desc: "Louvre Museum Tickets (Paris)",
     category: "sight",
     windowText: "3 Months Prior",
-    openDate: "2027-06-20"
+    openDate: "2027-06-20",
+    bookingUrl: "https://ticket.louvre.fr/en"
   },
   {
     id: "book-accademia",
     desc: "Accademia Gallery Tickets (Florence - David)",
     category: "sight",
     windowText: "3 Months Prior",
-    openDate: "2027-06-27"
+    openDate: "2027-06-27",
+    bookingUrl: "https://www.b-ticket.com/b-ticket/firenzemusei/default_eng.aspx.html"
   },
   {
     id: "book-vatican",
     desc: "Vatican Museums & Sistine Chapel Tickets",
     category: "sight",
     windowText: "60 Days Prior",
-    openDate: "2027-08-06"
+    openDate: "2027-08-06",
+    bookingUrl: "https://tickets.museivaticani.va"
   },
   {
     id: "book-papal",
     desc: "Papal Audience Ticket Requests (Rome)",
     category: "sight",
     windowText: "6 Months Prior",
-    openDate: "2027-04-06"
+    openDate: "2027-04-06",
+    bookingUrl: "https://eventi.pontificalisdomus.va/?lang=en-us"
   }
 ];
 
@@ -180,7 +189,11 @@ let expenses = [];
 let bookingStates = {};
 let contributions = { nthabi: 70000, kevin: 43000 };
 
-const customSystemDate = new Date("2026-06-21T19:48:08");
+// Uses the real current date so the Booking Windows countdown stays
+// accurate for as long as you're planning the trip. (Previously hardcoded
+// to a fixed test date, which is why it's called "customSystemDate" —
+// kept the name so nothing else in the file needs to change.)
+const customSystemDate = new Date();
 
 // --- FIRESTORE SYNC (shared data between Nthabi's and Kevin's devices) ---
 // Everything lives in one document, trip/shared. Firestore pushes live
@@ -567,6 +580,7 @@ function renderBookingCalendar() {
         <button class="checkbox-btn ${isBooked ? 'checked' : ''}" onclick="toggleBookingState('${item.id}')">
           ${isBooked ? 'Unmark' : 'Mark Booked'}
         </button>
+        ${item.bookingUrl ? `<a href="${item.bookingUrl}" target="_blank" rel="noopener noreferrer" class="book-link-btn">Check price ↗</a>` : ''}
       </td>
     `;
     body.appendChild(row);
