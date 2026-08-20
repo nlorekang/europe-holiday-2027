@@ -87,17 +87,8 @@
     .fs-updated { margin-top: 10px; font-size: 0.7rem; opacity: 0.5; }
 
     /* --- Photos tab (added) --- */
-    .photos-page { display: flex; flex-direction: column; gap: 18px; padding: 32px; }
-    .city-switcher {
-      display: flex;
-      gap: 8px;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      padding-bottom: 2px;
-    }
-    .city-switcher::-webkit-scrollbar { display: none; }
+    .photos-page { display: flex; flex-direction: column; gap: 18px; }
+    .city-switcher { display: flex; gap: 8px; flex-wrap: wrap; }
     .city-chip {
       padding: 8px 16px;
       border-radius: 999px;
@@ -107,8 +98,6 @@
       cursor: pointer;
       font-size: 0.9rem;
       font-weight: 500;
-      flex-shrink: 0;
-      white-space: nowrap;
     }
     .city-chip.active { background: #4a7dff; border-color: #4a7dff; color: #fff; }
     .photo-upload-row {
@@ -268,6 +257,20 @@
       font-size: 0.8rem;
     }
     .notif-empty { text-align: center; opacity: 0.6; font-size: 0.82rem; padding: 16px 0; }
+    .push-enable-row { margin-bottom: 12px; }
+    .push-enable-btn {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px dashed rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.03);
+      color: inherit;
+      font-size: 0.78rem;
+      cursor: pointer;
+      text-align: left;
+    }
+    .push-enable-btn:hover { background: rgba(255,255,255,0.07); }
+    .push-enable-status { display: block; font-size: 0.7rem; opacity: 0.7; margin-top: 4px; }
   </style>
 
   <!-- PWA: lets this install to a home screen as an app, with no app store -->
@@ -388,6 +391,11 @@
               <input type="date" id="reminder-due">
               <button type="submit" title="Add reminder">+</button>
             </form>
+
+            <div class="push-enable-row">
+              <button type="button" class="push-enable-btn" onclick="enablePushNotifications()">🔔 Enable push notifications on this device</button>
+              <span id="push-enable-status" class="push-enable-status"></span>
+            </div>
 
             <ul class="notif-list" id="notif-list"></ul>
           </div>
@@ -511,7 +519,7 @@
             <div class="calendar-intro-card">
               <div class="intro-text">
                 <h3>📅 Advance Booking Windows</h3>
-                <p>Track exactly when bookings open for flights, accommodation, visas, intercity trains, and premium museums to lock in standard prices and avoid sell-outs.</p>
+                <p>Track exactly when bookings open for international flights, intercity trains, and premium museums to lock in standard prices and avoid sell-outs.</p>
               </div>
               <div class="countdown-summary">
                 <div class="summary-box">
@@ -600,11 +608,11 @@
                 <form id="update-contributions-form" onsubmit="handleContributionsSubmit(event)">
                   <div class="form-row">
                     <div class="form-group">
-                      <label for="contrib-nthabi">Nthabi Contributed (R)</label>
+                      <label for="contrib-nthabi">Nthabi Contributed (ZAR)</label>
                       <input type="number" id="contrib-nthabi" min="0" step="0.01" required>
                     </div>
                     <div class="form-group">
-                      <label for="contrib-kevin">Kevin Contributed (R)</label>
+                      <label for="contrib-kevin">Kevin Contributed (ZAR)</label>
                       <input type="number" id="contrib-kevin" min="0" step="0.01" required>
                     </div>
                   </div>
@@ -619,7 +627,7 @@
                     <input type="text" id="exp-desc" placeholder="e.g. Louvre Tickets, Paris Airbnb" required>
                   </div>
                   <div class="form-group">
-                    <label for="exp-amount">Amount (R)</label>
+                    <label for="exp-amount">Amount (ZAR)</label>
                     <input type="number" id="exp-amount" min="1" step="0.01" placeholder="0.00" required>
                   </div>
                   <div class="form-group">
@@ -720,6 +728,7 @@
   <!-- Firebase (shared live data between devices) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
   <script src="firebase-config.js"></script>
 
   <!-- Cloudinary (photo hosting for the Photos tab) -->

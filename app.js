@@ -104,44 +104,21 @@ const legsData = [
 ];
 
 // --- BOOKING CALENDAR DATABASE ---
-// Window logic: Flights & Accommodation = 5 months prior. Visa = 3 months
-// prior. Activities/sights default to 3 months prior UNLESS the venue's own
-// site publishes a shorter official release window (Eiffel Tower, Vatican,
-// Sansevero Chapel, Uffizi, Vesuvius, Colosseum, Borghese all cap tickets
-// closer to the date than 3 months - those are marked accordingly below).
 const bookingItems = [
-  // --- FLIGHTS (5 Months Prior) ---
   {
     id: "book-int-flight",
     desc: "International Flights (JNB to CDG, FCO to JNB)",
     category: "flight",
-    windowText: "5 Months Prior",
-    openDate: "2027-04-18"
+    windowText: "11 Months Prior",
+    openDate: "2026-10-20"
   },
   {
     id: "book-paris-flight",
     desc: "Paris (CDG) to Venice (VCE) Budget Flight",
     category: "flight",
-    windowText: "5 Months Prior",
-    openDate: "2027-04-23"
+    windowText: "8 Months Prior",
+    openDate: "2027-01-24"
   },
-  // --- ACCOMMODATION (5 Months Prior) ---
-  {
-    id: "book-accommodation",
-    desc: "Self-Catering Apartments (Paris, Venice, Florence, Naples, Rome)",
-    category: "accommodation",
-    windowText: "5 Months Prior",
-    openDate: "2027-04-19"
-  },
-  // --- VISA (3 Months Prior) ---
-  {
-    id: "book-visa",
-    desc: "Schengen Visa Applications (Nthabi & Kevin)",
-    category: "visa",
-    windowText: "3 Months Prior",
-    openDate: "2027-06-18"
-  },
-  // --- TRAINS ---
   {
     id: "book-train-ven-flo",
     desc: "High-Speed Train: Venice to Florence",
@@ -163,7 +140,6 @@ const bookingItems = [
     windowText: "4 Months Prior",
     openDate: "2027-06-16"
   },
-  // --- ACTIVITIES / SIGHTS (3 Months Prior by default) ---
   {
     id: "book-louvre",
     desc: "Louvre Museum Tickets (Paris)",
@@ -172,53 +148,11 @@ const bookingItems = [
     openDate: "2027-06-20"
   },
   {
-    id: "book-versailles",
-    desc: "Palace of Versailles Timed Entry (Paris day trip)",
-    category: "sight",
-    windowText: "3 Months Prior",
-    openDate: "2027-06-21"
-  },
-  {
-    id: "book-eiffel",
-    desc: "Eiffel Tower Summit Elevator Slot",
-    category: "sight",
-    windowText: "60 Days Prior",
-    openDate: "2027-07-22"
-  },
-  {
-    id: "book-uffizi",
-    desc: "Uffizi Gallery Tickets (Florence)",
-    category: "sight",
-    windowText: "2 Months Prior",
-    openDate: "2027-07-26"
-  },
-  {
     id: "book-accademia",
     desc: "Accademia Gallery Tickets (Florence - David)",
     category: "sight",
     windowText: "3 Months Prior",
     openDate: "2027-06-27"
-  },
-  {
-    id: "book-sansevero",
-    desc: "Sansevero Chapel Museum (Naples - Veiled Christ)",
-    category: "sight",
-    windowText: "60 Days Prior",
-    openDate: "2027-08-01"
-  },
-  {
-    id: "book-vesuvius",
-    desc: "Mount Vesuvius Crater Trail Ticket",
-    category: "sight",
-    windowText: "30 Days Prior",
-    openDate: "2027-09-01"
-  },
-  {
-    id: "book-colosseum",
-    desc: "Colosseum, Roman Forum & Palatine Hill",
-    category: "sight",
-    windowText: "30 Days Prior",
-    openDate: "2027-09-07"
   },
   {
     id: "book-vatican",
@@ -233,13 +167,6 @@ const bookingItems = [
     category: "sight",
     windowText: "6 Months Prior",
     openDate: "2027-04-06"
-  },
-  {
-    id: "book-borghese",
-    desc: "Galleria Borghese Timed Entry (Bernini & Caravaggio)",
-    category: "sight",
-    windowText: "30 Days Prior",
-    openDate: "2027-09-08"
   }
 ];
 
@@ -941,7 +868,7 @@ function updateExpenseStats() {
   const remaining = pool - total;
   const balance = nthabiAmt - kevinAmt; // positive = Kevin owes Nthabi to equalize contributions
 
-  const fmt = (n) => `R ${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  const fmt = (n) => `R ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const totalSpentEl = document.getElementById("exp-total-spent");
   const p1PaidEl = document.getElementById("exp-p1-paid");
@@ -964,7 +891,7 @@ function updateExpenseStats() {
     settlementEl.textContent = "Even";
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else if (balance > 0) {
-    settlementEl.textContent = `-${fmt(balance)}`;
+    settlementEl.textContent = `Kevin owes Nthabi ${fmt(balance)}`;
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else {
     settlementEl.textContent = `Nthabi owes Kevin ${fmt(Math.abs(balance))}`;
@@ -1128,6 +1055,7 @@ window.handleCommentSubmit = function(event) {
     message: `${author} added a note: "${preview}"`,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).catch((err) => console.error("Failed to create notification:", err));
+  triggerPush("New note from " + author, preview, author);
 
   const form = document.getElementById("add-comment-form");
   if (form) form.reset();
@@ -1370,6 +1298,9 @@ window.handleReminderSubmit = function(event) {
     dueDate: dueInput.value || null,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).catch((err) => console.error("Failed to add reminder:", err));
+  // Reminders go to both devices — no sender to exclude, since either of
+  // you might be adding it for the other (or for both of you).
+  triggerPush("New reminder", text, null);
 
   textInput.value = "";
   dueInput.value = "";
@@ -1380,3 +1311,79 @@ window.deleteNotification = function(notifId) {
     console.error("Failed to delete notification:", err);
   });
 };
+
+// --- PUSH NOTIFICATIONS (Firebase Cloud Messaging) ---
+// No login system, so we ask once which person this device belongs to,
+// and remember it locally — this lets us skip notifying your own device
+// when you're the one who triggered the notification.
+
+const PUSH_IDENTITY_KEY = "eurotrip_push_identity";
+const VAPID_KEY = "BHdvqmPfIiV_IGm4fB_YPfY04HTleKUAv-yhyPZrZ9xteQc_5bCxE1WkVrA8Jbb7fdzdsNO54z1l9uAlJWVNkkI";
+
+function getPushIdentity() {
+  return localStorage.getItem(PUSH_IDENTITY_KEY);
+}
+
+window.enablePushNotifications = async function() {
+  const statusEl = document.getElementById("push-enable-status");
+
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    if (statusEl) statusEl.textContent = "Push isn't supported on this browser.";
+    return;
+  }
+
+  let identity = getPushIdentity();
+  if (!identity) {
+    // Simple one-time prompt; swap for the two-button UI in the panel if preferred
+    const answer = window.prompt("Is this device Nthabi's or Kevin's? (type Nthabi or Kevin)");
+    if (!answer) return;
+    identity = answer.trim().toLowerCase() === "kevin" ? "Kevin" : "Nthabi";
+    localStorage.setItem(PUSH_IDENTITY_KEY, identity);
+  }
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      if (statusEl) statusEl.textContent = "Notifications permission was not granted.";
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    const messaging = firebase.messaging();
+
+    const token = await messaging.getToken({
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: registration
+    });
+
+    if (!token) {
+      if (statusEl) statusEl.textContent = "Couldn't get a push token. Try again.";
+      return;
+    }
+
+    await db.collection("deviceTokens").doc(token).set({
+      token: token,
+      owner: identity,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    if (statusEl) statusEl.textContent = `Push notifications on for ${identity}'s device.`;
+  } catch (err) {
+    console.error("Push registration failed:", err);
+    if (statusEl) statusEl.textContent = "Something went wrong enabling push. Try again.";
+  }
+};
+
+// Sends a push via our serverless function; fails silently (console only)
+// so a push hiccup never blocks the in-app notification/reminder itself.
+async function triggerPush(title, body, excludeOwner) {
+  try {
+    await fetch("/api/send-push", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, body, excludeOwner })
+    });
+  } catch (err) {
+    console.error("Push trigger failed:", err);
+  }
+}
