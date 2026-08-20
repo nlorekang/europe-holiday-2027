@@ -370,6 +370,11 @@ window.switchTab = function(tabId) {
     if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "Ideas & Notes";
     document.getElementById("current-view-subtitle").textContent = "A shared space for anything either of you wants to flag.";
+  } else if (tabId === "tab-photos") {
+    const btn = document.getElementById("btn-photos");
+    if (btn) btn.classList.add("active");
+    document.getElementById("current-view-title").textContent = "Trip Photos";
+    document.getElementById("current-view-subtitle").textContent = `Shared photo dump for ${currentPhotoCity}.`;
   }
 };
 
@@ -807,17 +812,8 @@ window.selectItineraryDay = function(dayId, userInitiated = true) {
   // On narrow/mobile layouts the picker and detail pane stack vertically,
   // so bring the newly selected day's detail into view automatically —
   // but only when the user actually tapped a day, not on initial load.
-  // We scroll the real scroll container (.content-container) directly and
-  // compute the exact offset, rather than relying on scrollIntoView, which
-  // can leave a residual gap in some mobile browsers/PWA wrappers.
   if (userInitiated && window.innerWidth <= 1024) {
-    const scrollContainer = document.querySelector(".content-container");
-    if (scrollContainer) {
-      const containerTop = scrollContainer.getBoundingClientRect().top;
-      const paneTop = pane.getBoundingClientRect().top;
-      const targetScrollTop = scrollContainer.scrollTop + (paneTop - containerTop) - 8; // 8px breathing room
-      scrollContainer.scrollTo({ top: targetScrollTop, behavior: "smooth" });
-    }
+    pane.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 };
 
@@ -1051,6 +1047,15 @@ window.handleCommentSubmit = function(event) {
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).catch((err) => console.error("Failed to post note:", err));
 
+  // Auto-notification so the other person sees a new idea/note was added
+  const preview = text.length > 60 ? text.slice(0, 60) + "…" : text;
+  db.collection("notifications").add({
+    type: "note",
+    author: author,
+    message: `${author} added a note: "${preview}"`,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch((err) => console.error("Failed to create notification:", err));
+
   const form = document.getElementById("add-comment-form");
   if (form) form.reset();
 };
@@ -1058,5 +1063,247 @@ window.handleCommentSubmit = function(event) {
 window.deleteComment = function(commentId) {
   db.collection("comments").doc(commentId).delete().catch((err) => {
     console.error("Failed to delete note:", err);
+  });
+};
+
+// --- PHOTOS TAB (Cloudinary + Firestore) ---
+
+let currentPhotoCity = "Paris"; // defaults to the first trip city
+let unsubscribePhotos = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const switcher = document.getElementById("photo-city-switcher");
+  if (switcher) {
+    switcher.querySelectorAll(".city-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        switcher.querySelectorAll(".city-chip").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentPhotoCity = btn.dataset.city;
+        const subtitle = document.getElementById("current-view-subtitle");
+        if (subtitle) subtitle.textContent = `Shared photo dump for ${currentPhotoCity}.`;
+        loadPhotosForCity(currentPhotoCity);
+      });
+    });
+  }
+
+  const uploadInput = document.getElementById("photo-upload-input");
+  if (uploadInput) {
+    uploadInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const uploader = document.getElementById("photo-uploader").value;
+      const statusEl = document.getElementById("photo-upload-status");
+      statusEl.textContent = "Uploading...";
+
+      try {
+        await uploadPhoto(file, currentPhotoCity, uploader);
+        statusEl.textContent = "Uploaded!";
+        setTimeout(() => (statusEl.textContent = ""), 2000);
+      } catch (err) {
+        console.error("Photo upload failed:", err);
+        statusEl.textContent = "Upload failed. Please try again.";
+      }
+
+      e.target.value = ""; // allows re-selecting the same file later
+    });
+  }
+
+  // Load the default city's gallery as soon as Firestore is ready
+  loadPhotosForCity(currentPhotoCity);
+});
+
+async function uploadPhoto(file, city, uploader) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("folder", `eurotrip2027/${city.toLowerCase()}`);
+
+  const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Cloudinary upload failed (${response.status})`);
+  }
+
+  const data = await response.json();
+
+  await db.collection("photos").add({
+    city: city,
+    uploader: uploader,
+    imageUrl: data.secure_url,
+    publicId: data.public_id,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+}
+
+function loadPhotosForCity(city) {
+  const gallery = document.getElementById("photo-gallery");
+  if (!gallery) return;
+
+  if (unsubscribePhotos) unsubscribePhotos();
+
+  unsubscribePhotos = db
+    .collection("photos")
+    .where("city", "==", city)
+    .orderBy("createdAt", "desc")
+    .onSnapshot((snapshot) => {
+      gallery.innerHTML = "";
+
+      if (snapshot.empty) {
+        gallery.innerHTML = `<p class="photo-empty" style="color: var(--text-muted);">No photos yet for ${city} — be the first to add one.</p>`;
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const photo = doc.data();
+        const card = document.createElement("div");
+        card.className = "photo-card";
+        card.innerHTML = `
+          <img src="${photo.imageUrl}" alt="Photo from ${escapeHtml(photo.city || "")}" loading="lazy">
+          <div class="photo-meta">
+            <span>${escapeHtml(photo.uploader || "")}</span>
+            <button class="delete-photo-btn" onclick="deletePhoto('${doc.id}')" title="Delete photo">✕</button>
+          </div>
+        `;
+        gallery.appendChild(card);
+      });
+    }, (err) => {
+      console.error("Photos sync error:", err);
+    });
+}
+
+window.deletePhoto = function(photoId) {
+  // Removes the photo from the shared gallery (Firestore). The file stays
+  // in Cloudinary's library for now — deleting it there requires a signed
+  // request, which we'll add as a small follow-up step if you want fully
+  // clean storage.
+  db.collection("photos").doc(photoId).delete().catch((err) => {
+    console.error("Failed to delete photo:", err);
+  });
+};
+
+// --- NOTIFICATIONS (in-app feed) ---
+// No login system, so "unread" is tracked per-device via localStorage:
+// each device remembers the last time it opened the panel, and anything
+// created after that counts as unread on that device/browser.
+
+const NOTIF_LAST_SEEN_KEY = "eurotrip_notif_last_seen";
+let latestNotifTimestampMs = 0;
+
+function getLastSeenMs() {
+  const stored = localStorage.getItem(NOTIF_LAST_SEEN_KEY);
+  return stored ? parseInt(stored, 10) : 0;
+}
+
+function setLastSeenNow() {
+  localStorage.setItem(NOTIF_LAST_SEEN_KEY, Date.now().toString());
+}
+
+window.toggleNotifPanel = function() {
+  const panel = document.getElementById("notif-panel");
+  if (!panel) return;
+  const opening = !panel.classList.contains("open");
+  panel.classList.toggle("open");
+
+  if (opening) {
+    setLastSeenNow();
+    // Re-render immediately so unread highlighting/badge clears without
+    // waiting for the next Firestore snapshot.
+    db.collection("notifications").orderBy("createdAt", "desc").get()
+      .then(renderNotifications)
+      .catch((err) => console.error("Failed to refresh notifications:", err));
+  }
+};
+
+// Close the panel when clicking outside of it
+document.addEventListener("click", (e) => {
+  const wrapper = document.querySelector(".notif-wrapper");
+  const panel = document.getElementById("notif-panel");
+  if (wrapper && panel && panel.classList.contains("open") && !wrapper.contains(e.target)) {
+    panel.classList.remove("open");
+  }
+});
+
+let unreadNotifCount = 0;
+
+function renderNotifications(snapshot) {
+  const list = document.getElementById("notif-list");
+  const badge = document.getElementById("notif-badge");
+  if (!list) return;
+
+  list.innerHTML = "";
+  const lastSeen = getLastSeenMs();
+  unreadNotifCount = 0;
+
+  if (snapshot.empty) {
+    list.innerHTML = `<li class="notif-empty">No notifications yet.</li>`;
+  }
+
+  snapshot.forEach((doc) => {
+    const notif = doc.data();
+    const createdMs = notif.createdAt && notif.createdAt.toMillis ? notif.createdAt.toMillis() : Date.now();
+    latestNotifTimestampMs = Math.max(latestNotifTimestampMs, createdMs);
+    const isUnread = createdMs > lastSeen;
+    if (isUnread) unreadNotifCount++;
+
+    const li = document.createElement("li");
+    li.className = "notif-item" + (isUnread ? " unread" : "");
+
+    const dueLabel = notif.dueDate ? ` · due ${escapeHtml(notif.dueDate)}` : "";
+    const whenLabel = notif.createdAt && notif.createdAt.toDate
+      ? notif.createdAt.toDate().toLocaleDateString(undefined, { month: "short", day: "numeric" })
+      : "";
+
+    li.innerHTML = `
+      <div class="notif-item-body">
+        <div>${escapeHtml(notif.message || "")}</div>
+        <div class="notif-item-meta">${whenLabel}${dueLabel}</div>
+      </div>
+      <button class="delete-notif-btn" onclick="deleteNotification('${doc.id}')" title="Remove">✕</button>
+    `;
+    list.appendChild(li);
+  });
+
+  if (badge) {
+    if (unreadNotifCount > 0) {
+      badge.style.display = "flex";
+      badge.textContent = unreadNotifCount > 9 ? "9+" : unreadNotifCount;
+    } else {
+      badge.style.display = "none";
+    }
+  }
+}
+
+db.collection("notifications")
+  .orderBy("createdAt", "desc")
+  .onSnapshot(renderNotifications, (err) => {
+    console.error("Notifications sync error:", err);
+  });
+
+window.handleReminderSubmit = function(event) {
+  event.preventDefault();
+
+  const textInput = document.getElementById("reminder-text");
+  const dueInput = document.getElementById("reminder-due");
+  const text = textInput.value.trim();
+  if (!text) return;
+
+  db.collection("notifications").add({
+    type: "reminder",
+    message: text,
+    dueDate: dueInput.value || null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch((err) => console.error("Failed to add reminder:", err));
+
+  textInput.value = "";
+  dueInput.value = "";
+};
+
+window.deleteNotification = function(notifId) {
+  db.collection("notifications").doc(notifId).delete().catch((err) => {
+    console.error("Failed to delete notification:", err);
   });
 };

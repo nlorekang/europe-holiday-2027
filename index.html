@@ -159,6 +159,104 @@
       line-height: 1;
     }
     .photo-empty { grid-column: 1 / -1; text-align: center; padding: 24px 0; }
+
+    /* --- Notifications (added) --- */
+    .notif-wrapper { position: relative; }
+    .notif-bell-btn {
+      position: relative;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      color: inherit;
+      cursor: pointer;
+    }
+    .notif-bell-btn svg { width: 20px; height: 20px; }
+    .notif-badge {
+      position: absolute;
+      top: -6px; right: -6px;
+      background: #ff5252;
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      min-width: 17px; height: 17px;
+      border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 4px;
+    }
+    .notif-panel {
+      display: none;
+      position: absolute;
+      top: 48px; right: 0;
+      width: 320px;
+      max-height: 420px;
+      overflow-y: auto;
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+      z-index: 50;
+      padding: 14px;
+    }
+    .notif-panel.open { display: block; }
+    .notif-panel-header h4 { margin: 0 0 10px 0; font-size: 0.95rem; }
+    .notif-add-form {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .notif-add-form input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: inherit;
+      font-size: 0.85rem;
+    }
+    .notif-add-form input[type="date"] {
+      padding: 8px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: inherit;
+      font-size: 0.75rem;
+      max-width: 120px;
+    }
+    .notif-add-form button {
+      border: none;
+      border-radius: 8px;
+      background: #4a7dff;
+      color: #fff;
+      font-weight: 700;
+      width: 32px;
+      cursor: pointer;
+    }
+    .notif-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .notif-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      font-size: 0.82rem;
+    }
+    .notif-item.unread { border-left: 3px solid #4a7dff; }
+    .notif-item-body { flex: 1; }
+    .notif-item-meta { font-size: 0.68rem; opacity: 0.6; margin-top: 3px; }
+    .notif-item .delete-notif-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      opacity: 0.6;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .notif-empty { text-align: center; opacity: 0.6; font-size: 0.82rem; padding: 16px 0; }
   </style>
 
   <!-- PWA: lets this install to a home screen as an app, with no app store -->
@@ -261,6 +359,27 @@
         <div class="header-title">
           <h2 id="current-view-title">Vacation Dashboard</h2>
           <p id="current-view-subtitle">Overview of our 20-day sibling journey.</p>
+        </div>
+
+        <div class="notif-wrapper">
+          <button class="notif-bell-btn" id="notif-bell-btn" onclick="toggleNotifPanel()" aria-label="Notifications">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
+          </button>
+
+          <div class="notif-panel" id="notif-panel">
+            <div class="notif-panel-header">
+              <h4>Notifications</h4>
+            </div>
+
+            <form id="add-reminder-form" class="notif-add-form" onsubmit="handleReminderSubmit(event)">
+              <input type="text" id="reminder-text" placeholder="Add a reminder..." required>
+              <input type="date" id="reminder-due">
+              <button type="submit" title="Add reminder">+</button>
+            </form>
+
+            <ul class="notif-list" id="notif-list"></ul>
+          </div>
         </div>
       </header>
       
