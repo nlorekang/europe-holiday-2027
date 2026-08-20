@@ -88,7 +88,16 @@
 
     /* --- Photos tab (added) --- */
     .photos-page { display: flex; flex-direction: column; gap: 18px; padding: 32px; }
-    .city-switcher { display: flex; gap: 8px; flex-wrap: wrap; }
+    .city-switcher {
+      display: flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .city-switcher::-webkit-scrollbar { display: none; }
     .city-chip {
       padding: 8px 16px;
       border-radius: 999px;
@@ -98,6 +107,8 @@
       cursor: pointer;
       font-size: 0.9rem;
       font-weight: 500;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
     .city-chip.active { background: #4a7dff; border-color: #4a7dff; color: #fff; }
     .photo-upload-row {
