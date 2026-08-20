@@ -941,7 +941,7 @@ function updateExpenseStats() {
   const remaining = pool - total;
   const balance = nthabiAmt - kevinAmt; // positive = Kevin owes Nthabi to equalize contributions
 
-  const fmt = (n) => `R ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const fmt = (n) => `R ${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
   const totalSpentEl = document.getElementById("exp-total-spent");
   const p1PaidEl = document.getElementById("exp-p1-paid");
