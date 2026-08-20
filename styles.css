@@ -18,6 +18,8 @@
   --accent-emerald: #10b981;
   --accent-emerald-hover: #059669;
   --accent-rose: #f43f5e;
+  --accent-purple: #a855f7;
+  --accent-amber: #f59e0b;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -618,6 +620,8 @@ button, input, select, textarea {
 .category-pill.flight { background-color: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
 .category-pill.transit { background-color: rgba(249, 115, 22, 0.15); color: var(--accent-orange); }
 .category-pill.sight { background-color: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+.category-pill.accommodation { background-color: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+.category-pill.visa { background-color: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
 
 .status-indicator {
   display: inline-flex;

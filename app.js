@@ -104,21 +104,44 @@ const legsData = [
 ];
 
 // --- BOOKING CALENDAR DATABASE ---
+// Window logic: Flights & Accommodation = 5 months prior. Visa = 3 months
+// prior. Activities/sights default to 3 months prior UNLESS the venue's own
+// site publishes a shorter official release window (Eiffel Tower, Vatican,
+// Sansevero Chapel, Uffizi, Vesuvius, Colosseum, Borghese all cap tickets
+// closer to the date than 3 months - those are marked accordingly below).
 const bookingItems = [
+  // --- FLIGHTS (5 Months Prior) ---
   {
     id: "book-int-flight",
     desc: "International Flights (JNB to CDG, FCO to JNB)",
     category: "flight",
-    windowText: "11 Months Prior",
-    openDate: "2026-10-20"
+    windowText: "5 Months Prior",
+    openDate: "2027-04-18"
   },
   {
     id: "book-paris-flight",
     desc: "Paris (CDG) to Venice (VCE) Budget Flight",
     category: "flight",
-    windowText: "8 Months Prior",
-    openDate: "2027-01-24"
+    windowText: "5 Months Prior",
+    openDate: "2027-04-23"
   },
+  // --- ACCOMMODATION (5 Months Prior) ---
+  {
+    id: "book-accommodation",
+    desc: "Self-Catering Apartments (Paris, Venice, Florence, Naples, Rome)",
+    category: "accommodation",
+    windowText: "5 Months Prior",
+    openDate: "2027-04-19"
+  },
+  // --- VISA (3 Months Prior) ---
+  {
+    id: "book-visa",
+    desc: "Schengen Visa Applications (Nthabi & Kevin)",
+    category: "visa",
+    windowText: "3 Months Prior",
+    openDate: "2027-06-18"
+  },
+  // --- TRAINS ---
   {
     id: "book-train-ven-flo",
     desc: "High-Speed Train: Venice to Florence",
@@ -140,6 +163,7 @@ const bookingItems = [
     windowText: "4 Months Prior",
     openDate: "2027-06-16"
   },
+  // --- ACTIVITIES / SIGHTS (3 Months Prior by default) ---
   {
     id: "book-louvre",
     desc: "Louvre Museum Tickets (Paris)",
@@ -148,11 +172,53 @@ const bookingItems = [
     openDate: "2027-06-20"
   },
   {
+    id: "book-versailles",
+    desc: "Palace of Versailles Timed Entry (Paris day trip)",
+    category: "sight",
+    windowText: "3 Months Prior",
+    openDate: "2027-06-21"
+  },
+  {
+    id: "book-eiffel",
+    desc: "Eiffel Tower Summit Elevator Slot",
+    category: "sight",
+    windowText: "60 Days Prior",
+    openDate: "2027-07-22"
+  },
+  {
+    id: "book-uffizi",
+    desc: "Uffizi Gallery Tickets (Florence)",
+    category: "sight",
+    windowText: "2 Months Prior",
+    openDate: "2027-07-26"
+  },
+  {
     id: "book-accademia",
     desc: "Accademia Gallery Tickets (Florence - David)",
     category: "sight",
     windowText: "3 Months Prior",
     openDate: "2027-06-27"
+  },
+  {
+    id: "book-sansevero",
+    desc: "Sansevero Chapel Museum (Naples - Veiled Christ)",
+    category: "sight",
+    windowText: "60 Days Prior",
+    openDate: "2027-08-01"
+  },
+  {
+    id: "book-vesuvius",
+    desc: "Mount Vesuvius Crater Trail Ticket",
+    category: "sight",
+    windowText: "30 Days Prior",
+    openDate: "2027-09-01"
+  },
+  {
+    id: "book-colosseum",
+    desc: "Colosseum, Roman Forum & Palatine Hill",
+    category: "sight",
+    windowText: "30 Days Prior",
+    openDate: "2027-09-07"
   },
   {
     id: "book-vatican",
@@ -167,6 +233,13 @@ const bookingItems = [
     category: "sight",
     windowText: "6 Months Prior",
     openDate: "2027-04-06"
+  },
+  {
+    id: "book-borghese",
+    desc: "Galleria Borghese Timed Entry (Bernini & Caravaggio)",
+    category: "sight",
+    windowText: "30 Days Prior",
+    openDate: "2027-09-08"
   }
 ];
 
