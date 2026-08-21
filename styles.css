@@ -1532,9 +1532,9 @@ button, input, select, textarea {
      only way to keep it white on mobile as requested. Desktop is untouched
      and still shows the red overdraft warning. */
   .exp-card-remaining .exp-summary-value { color: #ffffff !important; }
-  .exp-card-balance .exp-summary-value { color: var(--accent-rose); }
-  .exp-card-nthabi .exp-summary-value { color: var(--accent-emerald); }
-  .exp-card-kevin .exp-summary-value { color: var(--accent-blue); }
+  .exp-card-balance .exp-summary-value { color: var(--accent-rose) !important; }
+  .exp-card-nthabi .exp-summary-value { color: var(--accent-emerald) !important; }
+  .exp-card-kevin .exp-summary-value { color: var(--accent-blue) !important; }
   
   .expenses-body {
     grid-template-columns: 1fr;
