@@ -952,7 +952,52 @@ function renderExpenseSplitter() {
   updateExpenseStats();
 }
 
+// Estimated budget per category (ZAR). Matches the category values used
+// in the expense form's dropdown, so actual spend can be totaled live
+// against each estimate.
+const budgetCategories = [
+  { key: "Accommodation", label: "Accommodation", estimate: 50000 },
+  { key: "Flights", label: "Flights", estimate: 36000 },
+  { key: "Transit", label: "Trains and Transit", estimate: 10000 },
+  { key: "Sights", label: "Sightseeing and Activities", estimate: 25000 },
+  { key: "Food", label: "Food/Groceries", estimate: 15000 },
+  { key: "Other", label: "Other", estimate: 4000 }
+];
+
+function renderBudgetCategories() {
+  const container = document.getElementById("budget-categories-list");
+  if (!container) return;
+
+  const fmt = (n) => `R ${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
+  container.innerHTML = "";
+
+  budgetCategories.forEach((cat) => {
+    const spent = expenses
+      .filter((exp) => exp.category === cat.key)
+      .reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
+
+    const pct = cat.estimate > 0 ? Math.min(100, (spent / cat.estimate) * 100) : 0;
+    const isOver = spent > cat.estimate;
+
+    const row = document.createElement("div");
+    row.className = "budget-category-row" + (isOver ? " over-budget" : "");
+    row.innerHTML = `
+      <div class="budget-category-top">
+        <span class="budget-category-label">${cat.label}</span>
+        <span class="budget-category-amounts">${fmt(spent)} <span class="budget-category-of">of</span> ${fmt(cat.estimate)}</span>
+      </div>
+      <div class="budget-category-bar-track">
+        <div class="budget-category-bar-fill" style="width: ${pct}%;"></div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
 function updateExpenseStats() {
+  renderBudgetCategories();
+
   let total = 0;
   expenses.forEach(exp => {
     total += parseFloat(exp.amount) || 0;
