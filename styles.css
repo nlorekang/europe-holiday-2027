@@ -20,6 +20,7 @@
   --accent-rose: #f43f5e;
   --accent-purple: #a855f7;
   --accent-amber: #f59e0b;
+  --accent-blue: #3b82f6;
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -1208,6 +1209,13 @@ button, input, select, textarea {
   color: var(--accent-emerald);
 }
 
+/* Total Spent is intentionally hidden (not removed) — the element and its
+   JS-updated value (#exp-total-spent) stay in the DOM in case it's needed
+   again later. */
+.exp-card-total-spent {
+  display: none;
+}
+
 .expenses-body {
   display: grid;
   grid-template-columns: 380px 1fr;
@@ -1507,6 +1515,26 @@ button, input, select, textarea {
   .expenses-summary-bar {
     grid-template-columns: 1fr 1fr;
   }
+
+  /* 2x2 layout on mobile: Remaining (top-left), Kevin's Balance (top-right),
+     Nthabi Contributed (bottom-left), Kevin Contributed (bottom-right).
+     Total Spent stays hidden (see .exp-card-total-spent above), so it
+     doesn't take a grid slot. Uses `order` rather than moving the HTML,
+     so desktop's card order is untouched. */
+  .exp-card-remaining { order: 1; }
+  .exp-card-balance { order: 2; }
+  .exp-card-nthabi { order: 3; }
+  .exp-card-kevin { order: 4; }
+
+  /* !important is needed here because app.js sets an inline red color on
+     this value when the pool goes negative (an overdraft warning) — inline
+     styles otherwise beat any external stylesheet rule, so this is the
+     only way to keep it white on mobile as requested. Desktop is untouched
+     and still shows the red overdraft warning. */
+  .exp-card-remaining .exp-summary-value { color: #ffffff !important; }
+  .exp-card-balance .exp-summary-value { color: var(--accent-rose); }
+  .exp-card-nthabi .exp-summary-value { color: var(--accent-emerald); }
+  .exp-card-kevin .exp-summary-value { color: var(--accent-blue); }
   
   .expenses-body {
     grid-template-columns: 1fr;

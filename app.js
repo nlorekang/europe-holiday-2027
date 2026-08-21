@@ -985,13 +985,13 @@ function updateExpenseStats() {
 
   if (balance === 0) {
     settlementEl.textContent = "Even";
-    if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
+    if (settlementCard) settlementCard.className = "exp-summary-card accent-owed exp-card-balance";
   } else if (balance > 0) {
     settlementEl.textContent = `-${fmt(balance)}`;
-    if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
+    if (settlementCard) settlementCard.className = "exp-summary-card accent-owed exp-card-balance";
   } else {
     settlementEl.textContent = `Nthabi owes Kevin ${fmt(Math.abs(balance))}`;
-    if (settlementCard) settlementCard.className = "exp-summary-card accent";
+    if (settlementCard) settlementCard.className = "exp-summary-card accent exp-card-balance";
   }
 }
 
