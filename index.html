@@ -87,8 +87,17 @@
     .fs-updated { margin-top: 10px; font-size: 0.7rem; opacity: 0.5; }
 
     /* --- Photos tab (added) --- */
-    .photos-page { display: flex; flex-direction: column; gap: 18px; }
-    .city-switcher { display: flex; gap: 8px; flex-wrap: wrap; }
+    .photos-page { display: flex; flex-direction: column; gap: 18px; padding: 32px; }
+    .city-switcher {
+      display: flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .city-switcher::-webkit-scrollbar { display: none; }
     .city-chip {
       padding: 8px 16px;
       border-radius: 999px;
@@ -98,6 +107,8 @@
       cursor: pointer;
       font-size: 0.9rem;
       font-weight: 500;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
     .city-chip.active { background: #4a7dff; border-color: #4a7dff; color: #fff; }
     .photo-upload-row {
@@ -201,6 +212,20 @@
     }
     .notif-panel.open { display: block; }
     .notif-panel-header h4 { margin: 0 0 10px 0; font-size: 0.95rem; }
+    .push-enable-row { margin-bottom: 12px; }
+    .push-enable-btn {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px dashed var(--border-color);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      cursor: pointer;
+      text-align: left;
+    }
+    .push-enable-btn:hover { background: rgba(255,255,255,0.07); }
+    .push-enable-status { display: block; font-size: 0.7rem; opacity: 0.7; margin-top: 4px; color: var(--text-muted); }
     .notif-add-form {
       display: flex;
       gap: 6px;
@@ -257,31 +282,6 @@
       font-size: 0.8rem;
     }
     .notif-empty { text-align: center; opacity: 0.6; font-size: 0.82rem; padding: 16px 0; }
-    .push-enable-row { margin-bottom: 12px; }
-    .push-enable-btn {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px dashed rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.03);
-      color: inherit;
-      font-size: 0.78rem;
-      cursor: pointer;
-      text-align: left;
-    }
-    .push-enable-btn:hover { background: rgba(255,255,255,0.07); }
-    .push-enable-status { display: block; font-size: 0.7rem; opacity: 0.7; margin-top: 4px; }
-    .book-link-btn {
-      display: inline-block;
-      margin-top: 6px;
-      font-size: 0.75rem;
-      color: #4a7dff;
-      text-decoration: none;
-      border: 1px solid rgba(74,125,255,0.4);
-      border-radius: 6px;
-      padding: 4px 8px;
-    }
-    .book-link-btn:hover { background: rgba(74,125,255,0.1); }
   </style>
 
   <!-- PWA: lets this install to a home screen as an app, with no app store -->
@@ -530,7 +530,7 @@
             <div class="calendar-intro-card">
               <div class="intro-text">
                 <h3>📅 Advance Booking Windows</h3>
-                <p>Track exactly when bookings open for international flights, intercity trains, and premium museums to lock in standard prices and avoid sell-outs.</p>
+                <p>Track exactly when bookings open for flights, accommodation, visas, intercity trains, and premium museums to lock in standard prices and avoid sell-outs.</p>
               </div>
               <div class="countdown-summary">
                 <div class="summary-box">

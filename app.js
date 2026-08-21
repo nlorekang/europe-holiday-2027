@@ -104,23 +104,46 @@ const legsData = [
 ];
 
 // --- BOOKING CALENDAR DATABASE ---
+// Window logic: Flights & Accommodation = 5 months prior. Visa = 3 months
+// prior. Activities/sights default to 3 months prior UNLESS the venue's own
+// site publishes a shorter official release window (Eiffel Tower, Vatican,
+// Sansevero Chapel, Uffizi, Vesuvius, Colosseum, Borghese all cap tickets
+// closer to the date than 3 months - those are marked accordingly below).
 const bookingItems = [
+  // --- FLIGHTS (5 Months Prior) ---
   {
     id: "book-int-flight",
     desc: "International Flights (JNB to CDG, FCO to JNB)",
     category: "flight",
-    windowText: "11 Months Prior",
-    openDate: "2026-10-20",
+    windowText: "5 Months Prior",
+    openDate: "2027-04-18",
     bookingUrl: "https://www.google.com/travel/flights"
   },
   {
     id: "book-paris-flight",
     desc: "Paris (CDG) to Venice (VCE) Budget Flight",
     category: "flight",
-    windowText: "8 Months Prior",
-    openDate: "2027-01-24",
+    windowText: "5 Months Prior",
+    openDate: "2027-04-23",
     bookingUrl: "https://www.google.com/travel/flights"
   },
+  // --- ACCOMMODATION (5 Months Prior) ---
+  {
+    id: "book-accommodation",
+    desc: "Self-Catering Apartments (Paris, Venice, Florence, Naples, Rome)",
+    category: "accommodation",
+    windowText: "5 Months Prior",
+    openDate: "2027-04-19"
+  },
+  // --- VISA (3 Months Prior) ---
+  {
+    id: "book-visa",
+    desc: "Schengen Visa Applications (Nthabi & Kevin)",
+    category: "visa",
+    windowText: "3 Months Prior",
+    openDate: "2027-06-18"
+  },
+  // --- TRAINS ---
   {
     id: "book-train-ven-flo",
     desc: "High-Speed Train: Venice to Florence",
@@ -145,6 +168,7 @@ const bookingItems = [
     openDate: "2027-06-16",
     bookingUrl: "https://www.trenitalia.com/en.html"
   },
+  // --- ACTIVITIES / SIGHTS (3 Months Prior by default) ---
   {
     id: "book-louvre",
     desc: "Louvre Museum Tickets (Paris)",
@@ -154,12 +178,60 @@ const bookingItems = [
     bookingUrl: "https://ticket.louvre.fr/en"
   },
   {
+    id: "book-versailles",
+    desc: "Palace of Versailles Timed Entry (Paris day trip)",
+    category: "sight",
+    windowText: "3 Months Prior",
+    openDate: "2027-06-21",
+    bookingUrl: "https://ticket.chateauversailles.fr/en/ticketing"
+  },
+  {
+    id: "book-eiffel",
+    desc: "Eiffel Tower Summit Elevator Slot",
+    category: "sight",
+    windowText: "60 Days Prior",
+    openDate: "2027-07-22",
+    bookingUrl: "https://ticket.toureiffel.paris/en"
+  },
+  {
+    id: "book-uffizi",
+    desc: "Uffizi Gallery Tickets (Florence)",
+    category: "sight",
+    windowText: "2 Months Prior",
+    openDate: "2027-07-26",
+    bookingUrl: "https://www.uffizi.it/en/tickets"
+  },
+  {
     id: "book-accademia",
     desc: "Accademia Gallery Tickets (Florence - David)",
     category: "sight",
     windowText: "3 Months Prior",
     openDate: "2027-06-27",
     bookingUrl: "https://www.b-ticket.com/b-ticket/firenzemusei/default_eng.aspx.html"
+  },
+  {
+    id: "book-sansevero",
+    desc: "Sansevero Chapel Museum (Naples - Veiled Christ)",
+    category: "sight",
+    windowText: "60 Days Prior",
+    openDate: "2027-08-01",
+    bookingUrl: "https://ticket.museosansevero.it/en/"
+  },
+  {
+    id: "book-vesuvius",
+    desc: "Mount Vesuvius Crater Trail Ticket",
+    category: "sight",
+    windowText: "30 Days Prior",
+    openDate: "2027-09-01",
+    bookingUrl: "https://www.vesuviusnationalpark.it/en/tickets"
+  },
+  {
+    id: "book-colosseum",
+    desc: "Colosseum, Roman Forum & Palatine Hill",
+    category: "sight",
+    windowText: "30 Days Prior",
+    openDate: "2027-09-07",
+    bookingUrl: "https://ticketing.colosseo.it/en/"
   },
   {
     id: "book-vatican",
@@ -176,6 +248,14 @@ const bookingItems = [
     windowText: "6 Months Prior",
     openDate: "2027-04-06",
     bookingUrl: "https://eventi.pontificalisdomus.va/?lang=en-us"
+  },
+  {
+    id: "book-borghese",
+    desc: "Galleria Borghese Timed Entry (Bernini & Caravaggio)",
+    category: "sight",
+    windowText: "30 Days Prior",
+    openDate: "2027-09-08",
+    bookingUrl: "https://galleriaborghese.cultura.gov.it/en/visita/info-biglietti/"
   }
 ];
 
@@ -577,10 +657,12 @@ function renderBookingCalendar() {
         </span>
       </td>
       <td data-label="Action">
-        <button class="checkbox-btn ${isBooked ? 'checked' : ''}" onclick="toggleBookingState('${item.id}')">
-          ${isBooked ? 'Unmark' : 'Mark Booked'}
-        </button>
-        ${item.bookingUrl ? `<a href="${item.bookingUrl}" target="_blank" rel="noopener noreferrer" class="book-link-btn">Check price ↗</a>` : ''}
+        <div class="booking-action-group">
+          ${item.bookingUrl ? `<a href="${item.bookingUrl}" target="_blank" rel="noopener noreferrer" class="book-link-btn">Check price ↗</a>` : ''}
+          <button class="checkbox-btn ${isBooked ? 'checked' : ''}" onclick="toggleBookingState('${item.id}')">
+            ${isBooked ? 'Unmark' : 'Booked'}
+          </button>
+        </div>
       </td>
     `;
     body.appendChild(row);
@@ -882,7 +964,7 @@ function updateExpenseStats() {
   const remaining = pool - total;
   const balance = nthabiAmt - kevinAmt; // positive = Kevin owes Nthabi to equalize contributions
 
-  const fmt = (n) => `R ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const fmt = (n) => `R ${n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
   const totalSpentEl = document.getElementById("exp-total-spent");
   const p1PaidEl = document.getElementById("exp-p1-paid");
@@ -905,7 +987,7 @@ function updateExpenseStats() {
     settlementEl.textContent = "Even";
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else if (balance > 0) {
-    settlementEl.textContent = `Kevin owes Nthabi ${fmt(balance)}`;
+    settlementEl.textContent = `-${fmt(balance)}`;
     if (settlementCard) settlementCard.className = "exp-summary-card accent-owed";
   } else {
     settlementEl.textContent = `Nthabi owes Kevin ${fmt(Math.abs(balance))}`;
@@ -1348,7 +1430,6 @@ window.enablePushNotifications = async function() {
 
   let identity = getPushIdentity();
   if (!identity) {
-    // Simple one-time prompt; swap for the two-button UI in the panel if preferred
     const answer = window.prompt("Is this device Nthabi's or Kevin's? (type Nthabi or Kevin)");
     if (!answer) return;
     identity = answer.trim().toLowerCase() === "kevin" ? "Kevin" : "Nthabi";

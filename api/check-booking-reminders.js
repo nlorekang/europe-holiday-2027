@@ -18,15 +18,24 @@ const { sendPush } = require("./_lib/push");
 const admin = require("firebase-admin");
 
 const bookingItems = [
-  { id: "book-int-flight", desc: "International Flights (JNB to CDG, FCO to JNB)", openDate: "2026-10-20" },
-  { id: "book-paris-flight", desc: "Paris (CDG) to Venice (VCE) Budget Flight", openDate: "2027-01-24" },
+  { id: "book-int-flight", desc: "International Flights (JNB to CDG, FCO to JNB)", openDate: "2027-04-18" },
+  { id: "book-paris-flight", desc: "Paris (CDG) to Venice (VCE) Budget Flight", openDate: "2027-04-23" },
+  { id: "book-accommodation", desc: "Self-Catering Apartments (Paris, Venice, Florence, Naples, Rome)", openDate: "2027-04-19" },
+  { id: "book-visa", desc: "Schengen Visa Applications (Nthabi & Kevin)", openDate: "2027-06-18" },
   { id: "book-train-ven-flo", desc: "High-Speed Train: Venice to Florence", openDate: "2027-05-27" },
   { id: "book-train-flo-rom", desc: "High-Speed Train: Florence to Naples", openDate: "2027-06-11" },
   { id: "book-train-rom-nap", desc: "High-Speed Train: Naples to Rome", openDate: "2027-06-16" },
   { id: "book-louvre", desc: "Louvre Museum Tickets (Paris)", openDate: "2027-06-20" },
+  { id: "book-versailles", desc: "Palace of Versailles Timed Entry (Paris day trip)", openDate: "2027-06-21" },
+  { id: "book-eiffel", desc: "Eiffel Tower Summit Elevator Slot", openDate: "2027-07-22" },
+  { id: "book-uffizi", desc: "Uffizi Gallery Tickets (Florence)", openDate: "2027-07-26" },
   { id: "book-accademia", desc: "Accademia Gallery Tickets (Florence - David)", openDate: "2027-06-27" },
+  { id: "book-sansevero", desc: "Sansevero Chapel Museum (Naples - Veiled Christ)", openDate: "2027-08-01" },
+  { id: "book-vesuvius", desc: "Mount Vesuvius Crater Trail Ticket", openDate: "2027-09-01" },
+  { id: "book-colosseum", desc: "Colosseum, Roman Forum & Palatine Hill", openDate: "2027-09-07" },
   { id: "book-vatican", desc: "Vatican Museums & Sistine Chapel Tickets", openDate: "2027-08-06" },
-  { id: "book-papal", desc: "Papal Audience Ticket Requests (Rome)", openDate: "2027-04-06" }
+  { id: "book-papal", desc: "Papal Audience Ticket Requests (Rome)", openDate: "2027-04-06" },
+  { id: "book-borghese", desc: "Galleria Borghese Timed Entry (Bernini & Caravaggio)", openDate: "2027-09-08" }
 ];
 
 function daysBetween(a, b) {
