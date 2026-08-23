@@ -1730,6 +1730,109 @@ button, input, select, textarea {
 }
 
 /* --- LANDING PAGE OVERLAY --- */
+/* --- LOGIN SCREEN --- */
+.login-screen-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 100000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000000;
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 340px;
+  padding: 32px 28px;
+  margin: 0 20px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+}
+
+.login-title {
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  margin: 0 0 2px 0;
+  text-align: center;
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+  margin: 0 0 18px 0;
+}
+
+.login-label {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  margin-top: 8px;
+}
+
+.login-input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+}
+
+.login-error {
+  color: var(--accent-rose);
+  font-size: 0.78rem;
+  min-height: 16px;
+  margin: 8px 0 0 0;
+}
+
+.login-submit-btn {
+  margin-top: 14px;
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--accent-cyan);
+  color: #04121a;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.login-submit-btn:hover { opacity: 0.9; }
+.login-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.logout-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background-color: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  color: var(--accent-rose);
+  border-color: var(--accent-rose);
+}
+
+.logout-btn svg { width: 18px; height: 18px; }
+
 .landing-page-container {
   position: fixed;
   top: 0;

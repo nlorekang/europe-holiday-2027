@@ -281,28 +281,32 @@ const customSystemDate = new Date();
 // booking checkmarks stay in sync without anyone refreshing.
 const tripDocRef = db.collection("trip").doc("shared");
 
-tripDocRef.onSnapshot((docSnap) => {
-  if (docSnap.exists) {
-    const data = docSnap.data();
-    expenses = data.expenses || [];
-    bookingStates = data.bookingStates || {};
-    contributions = data.contributions || { nthabi: 70000, kevin: 43000 };
-  } else {
-    // First device to ever load the app — seed the shared document.
-    tripDocRef.set({ expenses, bookingStates, contributions });
-  }
+// Wrapped in a function (rather than firing immediately) because this now
+// waits for a successful login — see the auth section further down.
+function subscribeTripData() {
+  tripDocRef.onSnapshot((docSnap) => {
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      expenses = data.expenses || [];
+      bookingStates = data.bookingStates || {};
+      contributions = data.contributions || { nthabi: 70000, kevin: 43000 };
+    } else {
+      // First device to ever load the app — seed the shared document.
+      tripDocRef.set({ expenses, bookingStates, contributions });
+    }
 
-  // Re-render whatever is currently on screen so both devices update live.
-  try { renderBookingCalendar(); } catch (e) {}
-  try { renderExpenseSplitter(); } catch (e) {}
+    // Re-render whatever is currently on screen so both devices update live.
+    try { renderBookingCalendar(); } catch (e) {}
+    try { renderExpenseSplitter(); } catch (e) {}
 
-  const contribNthabiEl = document.getElementById("contrib-nthabi");
-  const contribKevinEl = document.getElementById("contrib-kevin");
-  if (contribNthabiEl && document.activeElement !== contribNthabiEl) contribNthabiEl.value = contributions.nthabi;
-  if (contribKevinEl && document.activeElement !== contribKevinEl) contribKevinEl.value = contributions.kevin;
-}, (err) => {
-  console.error("Firestore sync error:", err);
-});
+    const contribNthabiEl = document.getElementById("contrib-nthabi");
+    const contribKevinEl = document.getElementById("contrib-kevin");
+    if (contribNthabiEl && document.activeElement !== contribNthabiEl) contribNthabiEl.value = contributions.nthabi;
+    if (contribKevinEl && document.activeElement !== contribKevinEl) contribKevinEl.value = contributions.kevin;
+  }, (err) => {
+    console.error("Firestore sync error:", err);
+  });
+}
 
 // Merges a partial update (e.g. { expenses } or { bookingStates }) into
 // the shared trip document. Other devices pick it up via onSnapshot above.
@@ -311,6 +315,65 @@ function saveTripData(partial) {
     console.error("Firestore save error:", err);
   });
 }
+
+// --- LOGIN GATE ---
+// Nothing that touches Firestore (the trip data, notes, notifications,
+// photos) starts syncing until someone successfully logs in. The login
+// screen itself sits on top of the existing landing page, so the flow is:
+// login screen → (on success) → landing page → Explore More → app.
+let realtimeListenersAttached = false;
+
+function attachRealtimeListeners() {
+  if (realtimeListenersAttached) return;
+  realtimeListenersAttached = true;
+  subscribeTripData();
+  subscribeComments();
+  subscribeNotifications();
+  loadPhotosForCity(currentPhotoCity);
+}
+
+firebase.auth().onAuthStateChanged((user) => {
+  const loginScreen = document.getElementById("login-screen");
+  const landingPage = document.getElementById("landing-page");
+  const mainApp = document.getElementById("main-app-container");
+
+  if (user) {
+    if (loginScreen) loginScreen.style.display = "none";
+    if (landingPage) landingPage.style.display = "flex";
+    attachRealtimeListeners();
+  } else {
+    if (loginScreen) loginScreen.style.display = "flex";
+    if (landingPage) landingPage.style.display = "none";
+    if (mainApp) mainApp.style.display = "none";
+  }
+});
+
+window.handleLoginSubmit = function(event) {
+  event.preventDefault();
+
+  const emailInput = document.getElementById("login-email");
+  const passwordInput = document.getElementById("login-password");
+  const errorEl = document.getElementById("login-error");
+  const submitBtn = document.getElementById("login-submit-btn");
+
+  if (errorEl) errorEl.textContent = "";
+  if (submitBtn) submitBtn.disabled = true;
+
+  firebase.auth().signInWithEmailAndPassword(emailInput.value.trim(), passwordInput.value)
+    .catch((err) => {
+      console.error("Login failed:", err);
+      if (errorEl) errorEl.textContent = "Incorrect email or password.";
+    })
+    .finally(() => {
+      if (submitBtn) submitBtn.disabled = false;
+    });
+};
+
+window.handleLogout = function() {
+  firebase.auth().signOut().catch((err) => {
+    console.error("Logout failed:", err);
+  });
+};
 
 // --- INITIALIZE ON LOAD ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -1137,7 +1200,9 @@ function escapeHtml(str) {
 
 const commentsRef = db.collection("comments").orderBy("createdAt", "desc");
 
-commentsRef.onSnapshot((snapshot) => {
+// Also deferred until login — see subscribeTripData() above for why.
+function subscribeComments() {
+  commentsRef.onSnapshot((snapshot) => {
   const list = document.getElementById("notes-list");
   if (!list) return;
   list.innerHTML = "";
@@ -1170,9 +1235,10 @@ commentsRef.onSnapshot((snapshot) => {
     `;
     list.appendChild(item);
   });
-}, (err) => {
-  console.error("Comments sync error:", err);
-});
+  }, (err) => {
+    console.error("Comments sync error:", err);
+  });
+}
 
 window.handleCommentSubmit = function(event) {
   event.preventDefault();
@@ -1251,8 +1317,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Load the default city's gallery as soon as Firestore is ready
-  loadPhotosForCity(currentPhotoCity);
+  // Initial photo load now happens post-login (see attachRealtimeListeners())
 });
 
 async function uploadPhoto(file, city, uploader) {
@@ -1419,11 +1484,14 @@ function renderNotifications(snapshot) {
   }
 }
 
-db.collection("notifications")
-  .orderBy("createdAt", "desc")
-  .onSnapshot(renderNotifications, (err) => {
-    console.error("Notifications sync error:", err);
-  });
+// Also deferred until login — see subscribeTripData() above for why.
+function subscribeNotifications() {
+  db.collection("notifications")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(renderNotifications, (err) => {
+      console.error("Notifications sync error:", err);
+    });
+}
 
 window.handleReminderSubmit = function(event) {
   event.preventDefault();
