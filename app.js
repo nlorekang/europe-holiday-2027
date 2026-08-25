@@ -330,6 +330,7 @@ function attachRealtimeListeners() {
   subscribeComments();
   subscribeNotifications();
   loadPhotosForCity(currentPhotoCity);
+  loadAccomForCity(currentAccomCity);
 }
 
 firebase.auth().onAuthStateChanged((user) => {
@@ -526,6 +527,11 @@ window.switchTab = function(tabId) {
     if (btn) btn.classList.add("active");
     document.getElementById("current-view-title").textContent = "Ideas & Notes";
     document.getElementById("current-view-subtitle").textContent = "A shared space for anything either of you wants to flag.";
+  } else if (tabId === "tab-accommodation") {
+    const btn = document.getElementById("btn-accommodation");
+    if (btn) btn.classList.add("active");
+    document.getElementById("current-view-title").textContent = "Accommodation Options";
+    document.getElementById("current-view-subtitle").textContent = `Candidate stays for ${currentAccomCity}.`;
   } else if (tabId === "tab-photos") {
     const btn = document.getElementById("btn-photos");
     if (btn) btn.classList.add("active");
@@ -1273,6 +1279,108 @@ window.deleteComment = function(commentId) {
     console.error("Failed to delete note:", err);
   });
 };
+
+// --- ACCOMMODATION OPTIONS TAB (per-city shortlist) ---
+
+let currentAccomCity = "Paris"; // defaults to the first trip city
+let unsubscribeAccom = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const switcher = document.getElementById("accom-city-switcher");
+  if (switcher) {
+    switcher.querySelectorAll(".city-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        switcher.querySelectorAll(".city-chip").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentAccomCity = btn.dataset.city;
+        const heading = document.getElementById("accom-list-heading");
+        if (heading) heading.textContent = `${currentAccomCity} Shortlist`;
+        const subtitle = document.getElementById("current-view-subtitle");
+        if (subtitle) subtitle.textContent = `Candidate stays for ${currentAccomCity}.`;
+        loadAccomForCity(currentAccomCity);
+      });
+    });
+  }
+});
+
+window.handleAccomSubmit = function(event) {
+  event.preventDefault();
+
+  const name = document.getElementById("accom-name").value.trim();
+  const platform = document.getElementById("accom-platform").value;
+  const priceRaw = document.getElementById("accom-price").value;
+  const link = document.getElementById("accom-link").value.trim();
+  const notes = document.getElementById("accom-notes").value.trim();
+  const addedBy = document.getElementById("accom-added-by").value;
+
+  if (!name) return;
+
+  db.collection("accommodation").add({
+    city: currentAccomCity,
+    name: name,
+    platform: platform,
+    price: priceRaw ? Number(priceRaw) : null,
+    link: link,
+    notes: notes,
+    addedBy: addedBy,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch((err) => console.error("Failed to add accommodation listing:", err));
+
+  const form = document.getElementById("add-accom-form");
+  if (form) form.reset();
+};
+
+window.deleteAccom = function(accomId) {
+  db.collection("accommodation").doc(accomId).delete().catch((err) => {
+    console.error("Failed to delete accommodation listing:", err);
+  });
+};
+
+function loadAccomForCity(city) {
+  const list = document.getElementById("accom-list");
+  if (!list) return;
+
+  if (unsubscribeAccom) unsubscribeAccom();
+
+  unsubscribeAccom = db
+    .collection("accommodation")
+    .where("city", "==", city)
+    .orderBy("createdAt", "desc")
+    .onSnapshot((snapshot) => {
+      list.innerHTML = "";
+
+      if (snapshot.empty) {
+        list.innerHTML = `<li class="ledger-item-row" style="justify-content:center; color: var(--text-muted);">No listings yet for ${city} — add one above.</li>`;
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const priceText = data.price ? `R${Number(data.price).toLocaleString()}` : "No price yet";
+
+        const item = document.createElement("li");
+        item.className = "ledger-item-row";
+        item.innerHTML = `
+          <div class="ledger-item-left">
+            <div class="category-icon">🏠</div>
+            <div class="ledger-item-info note-item-info">
+              <h4>${escapeHtml(data.name || "")}</h4>
+              <p>${escapeHtml(data.platform || "")} · ${priceText}</p>
+              ${data.notes ? `<p class="note-meta">${escapeHtml(data.notes)}</p>` : ""}
+              ${data.link ? `<p class="note-meta"><a href="${escapeHtml(data.link)}" target="_blank" rel="noopener">Open listing ↗</a></p>` : ""}
+              <p class="note-meta">Added by ${escapeHtml(data.addedBy || "Unknown")}</p>
+            </div>
+          </div>
+          <div class="ledger-item-right">
+            <button class="delete-expense-btn" onclick="deleteAccom('${doc.id}')" title="Delete listing">✕</button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }, (err) => {
+      console.error("Accommodation sync error:", err);
+    });
+}
 
 // --- PHOTOS TAB (Cloudinary + Firestore) ---
 
