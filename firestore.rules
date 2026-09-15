@@ -1,0 +1,83 @@
+rules_version = '2';
+
+// Enforces two things the client-side login screen alone can't guarantee:
+//   1. Only signed-in users (real accounts or valid guests) can read data.
+//   2. Only real accounts (Nthabi/Kevin) can write anything. Guests
+//      (uid starting with "guest_") get read-only access, and only while
+//      their guestLinks doc is neither revoked nor past its expiresAt.
+//
+// This file is for reference/version-control. Deploy it via
+//   firebase deploy --only firestore:rules
+// or paste its contents into Firebase Console → Firestore → Rules.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isGuestUid() {
+      return isSignedIn() && request.auth.uid.matches('guest_.*');
+    }
+
+    function guestCode() {
+      return request.auth.uid.split('_')[1];
+    }
+
+    function guestLinkDoc() {
+      return get(/databases/$(database)/documents/guestLinks/$(guestCode()));
+    }
+
+    function isValidGuest() {
+      return isGuestUid()
+        && guestLinkDoc().data.revoked == false
+        && guestLinkDoc().data.expiresAt != null
+        && request.time < guestLinkDoc().data.expiresAt;
+    }
+
+    function isRealUser() {
+      return isSignedIn() && !isGuestUid();
+    }
+
+    function canRead() {
+      return isRealUser() || isValidGuest();
+    }
+
+    // Only real users can create/revoke/inspect guest links.
+    match /guestLinks/{code} {
+      allow read, write: if isRealUser();
+    }
+
+    // Everything guests are allowed to view, read-only.
+    match /trip/{docId} {
+      allow read: if canRead();
+      allow write: if isRealUser();
+    }
+
+    match /comments/{docId} {
+      allow read: if canRead();
+      allow write: if isRealUser();
+    }
+
+    match /notifications/{docId} {
+      allow read: if canRead();
+      allow write: if isRealUser();
+    }
+
+    match /photos/{docId} {
+      allow read: if canRead();
+      allow write: if isRealUser();
+    }
+
+    match /accommodation/{docId} {
+      allow read: if canRead();
+      allow write: if isRealUser();
+    }
+
+    // Push notification device tokens — never relevant to guests.
+    match /deviceTokens/{docId} {
+      allow read, write: if isRealUser();
+    }
+  }
+}

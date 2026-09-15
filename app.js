@@ -331,22 +331,196 @@ function attachRealtimeListeners() {
   subscribeNotifications();
   loadPhotosForCity(currentPhotoCity);
   loadAccomForCity(currentAccomCity);
+  if (!isGuest()) subscribeGuestLinks();
 }
 
-firebase.auth().onAuthStateChanged((user) => {
+// --- GUEST ACCESS ---
+// Guests sign in via a one-time link (yourapp.com?guest=CODE) instead of
+// a password. /api/guest-login validates the code, starts its 24-hour
+// clock the first time it's ever used, and mints a short-lived Firebase
+// custom token for uid "guest_<code>". Firestore security rules (not
+// this code) are what actually enforce read-only + the expiry — the
+// guardAgainstGuest() calls sprinkled through the edit/delete handlers
+// below are just a friendlier UX so guests get a clear message instead
+// of a silent permission-denied error from Firestore.
+function isGuest() {
+  const user = firebase.auth().currentUser;
+  return !!(user && user.uid && user.uid.startsWith("guest_"));
+}
+
+function guardAgainstGuest() {
+  if (isGuest()) {
+    alert("You're viewing this trip as a guest — only Nthabi and Kevin can make changes.");
+    return true;
+  }
+  return false;
+}
+
+let guestExpiresAt = null;
+let guestLoginAttempted = false;
+
+async function tryGuestLogin() {
+  guestLoginAttempted = true;
+
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("guest");
+  if (!code) return;
+
+  // Strip the code from the URL right away so it doesn't linger in
+  // browser history or get shared again by accident.
+  params.delete("guest");
+  const query = params.toString();
+  const cleanUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
+  window.history.replaceState({}, document.title, cleanUrl);
+
+  try {
+    const resp = await fetch("/api/guest-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code })
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      const messages = {
+        not_found: "That guest link isn't valid.",
+        revoked: "That guest link has been turned off.",
+        expired: "That guest link has expired — ask for a new one."
+      };
+      alert(messages[data.error] || "Couldn't sign you in with that link.");
+      return;
+    }
+
+    guestExpiresAt = data.expiresAt;
+    await firebase.auth().signInWithCustomToken(data.token);
+  } catch (err) {
+    console.error("Guest login failed:", err);
+    alert("Couldn't sign you in with that link. Check your connection and try again.");
+  }
+}
+
+// Shows/hides the "Guest view (read-only)" banner and hides editing
+// controls (also handled per-page via the .guest-hide CSS class).
+function applyGuestUI() {
+  document.body.classList.toggle("guest-mode", isGuest());
+
+  const expiryLabel = document.getElementById("guest-banner-expiry");
+  if (expiryLabel && isGuest() && guestExpiresAt) {
+    const hrsLeft = Math.max(0, Math.round((guestExpiresAt - Date.now()) / (60 * 60 * 1000)));
+    expiryLabel.textContent = hrsLeft <= 1 ? "expires soon" : `expires in about ${hrsLeft}h`;
+  }
+}
+
+// --- GUEST ACCESS ADMIN (Nthabi/Kevin only) ---
+// Lets a real (non-guest) user create and revoke read-only guest links.
+// Codes are just random strings — there's nothing secret worth protecting
+// in the code itself, since Firestore rules (via the guest link doc's
+// revoked/expiresAt fields) are what actually gate access, not obscurity.
+window.generateGuestLink = function() {
+  if (guardAgainstGuest()) return;
+
+  const label = prompt('Who is this link for? (optional, e.g. "Mom")') || null;
+  const code = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
+
+  db.collection("guestLinks").doc(code).set({
+    label,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    createdBy: firebase.auth().currentUser.email,
+    firstUsedAt: null,
+    expiresAt: null,
+    revoked: false
+  }).then(() => {
+    const link = `${window.location.origin}${window.location.pathname}?guest=${code}`;
+    prompt("Guest link created — copy and share it:", link);
+  }).catch((err) => {
+    console.error("Failed to create guest link:", err);
+    alert("Couldn't create the guest link. Try again.");
+  });
+};
+
+window.revokeGuestLink = function(code) {
+  if (guardAgainstGuest()) return;
+  if (!confirm("Revoke this guest link? It will stop working immediately.")) return;
+
+  db.collection("guestLinks").doc(code).update({ revoked: true }).catch((err) => {
+    console.error("Failed to revoke guest link:", err);
+    alert("Couldn't revoke that link. Try again.");
+  });
+};
+
+function subscribeGuestLinks() {
+  db.collection("guestLinks").orderBy("createdAt", "desc").onSnapshot((snap) => {
+    const list = document.getElementById("guest-links-list");
+    if (!list) return;
+
+    if (snap.empty) {
+      list.innerHTML = '<p class="notif-empty">No guest links yet.</p>';
+      return;
+    }
+
+    const now = Date.now();
+    list.innerHTML = snap.docs.map((doc) => {
+      const d = doc.data();
+      let status;
+      if (d.revoked) {
+        status = "revoked";
+      } else if (!d.firstUsedAt) {
+        status = "not opened yet";
+      } else if (d.expiresAt && d.expiresAt.toMillis() < now) {
+        status = "expired";
+      } else if (d.expiresAt) {
+        const hrsLeft = Math.max(0, Math.round((d.expiresAt.toMillis() - now) / (60 * 60 * 1000)));
+        status = hrsLeft <= 1 ? "expires soon" : `expires in ~${hrsLeft}h`;
+      } else {
+        status = "active";
+      }
+
+      return `
+        <li class="guest-link-row">
+          <span>${d.label || "Guest link"} <span class="guest-link-status">— ${status}</span></span>
+          ${!d.revoked ? `<button class="delete-notif-btn" onclick="revokeGuestLink('${doc.id}')" title="Revoke">✕</button>` : ""}
+        </li>
+      `;
+    }).join("");
+  }, (err) => {
+    console.error("Failed to load guest links:", err);
+  });
+}
+
+window.toggleGuestPanel = function() {
+  const panel = document.getElementById("guest-access-panel");
+  if (panel) panel.classList.toggle("open");
+};
+
+firebase.auth().onAuthStateChanged(async (user) => {
+  const authLoading = document.getElementById("auth-loading");
   const loginScreen = document.getElementById("login-screen");
   const landingPage = document.getElementById("landing-page");
   const mainApp = document.getElementById("main-app-container");
 
   if (user) {
+    if (authLoading) authLoading.style.display = "none";
     if (loginScreen) loginScreen.style.display = "none";
     if (landingPage) landingPage.style.display = "flex";
+    applyGuestUI();
     attachRealtimeListeners();
-  } else {
-    if (loginScreen) loginScreen.style.display = "flex";
-    if (landingPage) landingPage.style.display = "none";
-    if (mainApp) mainApp.style.display = "none";
+    return;
   }
+
+  // No signed-in user yet. If a guest link brought them here, try that
+  // silently (keeping the loading screen up) instead of flashing the
+  // password form first. signInWithCustomToken success re-triggers this
+  // listener with a user, so we just return and let that happen.
+  const hasGuestCode = new URLSearchParams(window.location.search).has("guest");
+  if (hasGuestCode && !guestLoginAttempted) {
+    await tryGuestLogin();
+    if (firebase.auth().currentUser) return;
+  }
+
+  if (authLoading) authLoading.style.display = "none";
+  if (loginScreen) loginScreen.style.display = "flex";
+  if (landingPage) landingPage.style.display = "none";
+  if (mainApp) mainApp.style.display = "none";
 });
 
 window.handleLoginSubmit = function(event) {
@@ -742,6 +916,7 @@ function renderBookingCalendar() {
 }
 
 window.toggleBookingState = function(itemId) {
+  if (guardAgainstGuest()) return;
   bookingStates[itemId] = !bookingStates[itemId];
   saveTripData({ bookingStates });
   renderBookingCalendar();
@@ -1012,7 +1187,7 @@ function renderExpenseSplitter() {
       </div>
       <div class="ledger-item-right">
         <span class="ledger-amount">R ${exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-        <button class="delete-expense-btn" onclick="deleteExpense(${index})" title="Delete expense">✕</button>
+        <button class="delete-expense-btn guest-hide" onclick="deleteExpense(${index})" title="Delete expense">✕</button>
       </div>
     `;
     list.appendChild(item);
@@ -1111,6 +1286,7 @@ function updateExpenseStats() {
 
 window.handleContributionsSubmit = function(event) {
   event.preventDefault();
+  if (guardAgainstGuest()) return;
   const nthabiVal = parseFloat(document.getElementById("contrib-nthabi").value);
   const kevinVal = parseFloat(document.getElementById("contrib-kevin").value);
 
@@ -1123,6 +1299,7 @@ window.handleContributionsSubmit = function(event) {
 
 window.handleExpenseSubmit = function(event) {
   event.preventDefault();
+  if (guardAgainstGuest()) return;
   
   const desc = document.getElementById("exp-desc").value.trim();
   const amount = parseFloat(document.getElementById("exp-amount").value);
@@ -1147,12 +1324,14 @@ window.handleExpenseSubmit = function(event) {
 };
 
 window.deleteExpense = function(index) {
+  if (guardAgainstGuest()) return;
   expenses.splice(index, 1);
   saveTripData({ expenses });
   renderExpenseSplitter();
 };
 
 window.clearExpenses = function() {
+  if (guardAgainstGuest()) return;
   if (confirm("Are you sure you want to clear the entire expense ledger?")) {
     expenses = [];
     saveTripData({ expenses });
@@ -1236,7 +1415,7 @@ function subscribeComments() {
         </div>
       </div>
       <div class="ledger-item-right">
-        <button class="delete-expense-btn" onclick="deleteComment('${doc.id}')" title="Delete note">✕</button>
+        <button class="delete-expense-btn guest-hide" onclick="deleteComment('${doc.id}')" title="Delete note">✕</button>
       </div>
     `;
     list.appendChild(item);
@@ -1248,6 +1427,7 @@ function subscribeComments() {
 
 window.handleCommentSubmit = function(event) {
   event.preventDefault();
+  if (guardAgainstGuest()) return;
 
   const author = document.getElementById("comment-author").value;
   const text = document.getElementById("comment-text").value.trim();
@@ -1275,6 +1455,7 @@ window.handleCommentSubmit = function(event) {
 };
 
 window.deleteComment = function(commentId) {
+  if (guardAgainstGuest()) return;
   db.collection("comments").doc(commentId).delete().catch((err) => {
     console.error("Failed to delete note:", err);
   });
@@ -1305,6 +1486,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 window.handleAccomSubmit = function(event) {
   event.preventDefault();
+  if (guardAgainstGuest()) return;
+  if (guardAgainstGuest()) return;
 
   const name = document.getElementById("accom-name").value.trim();
   const platform = document.getElementById("accom-platform").value;
@@ -1331,6 +1514,8 @@ window.handleAccomSubmit = function(event) {
 };
 
 window.deleteAccom = function(accomId) {
+  if (guardAgainstGuest()) return;
+  if (guardAgainstGuest()) return;
   db.collection("accommodation").doc(accomId).delete().catch((err) => {
     console.error("Failed to delete accommodation listing:", err);
   });
@@ -1372,7 +1557,7 @@ function loadAccomForCity(city) {
             </div>
           </div>
           <div class="ledger-item-right">
-            <button class="delete-expense-btn" onclick="deleteAccom('${doc.id}')" title="Delete listing">✕</button>
+            <button class="delete-expense-btn guest-hide" onclick="deleteAccom('${doc.id}')" title="Delete listing">✕</button>
           </div>
         `;
         list.appendChild(item);
@@ -1429,6 +1614,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function uploadPhoto(file, city, uploader) {
+  if (guardAgainstGuest()) return;
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
@@ -1480,7 +1666,7 @@ function loadPhotosForCity(city) {
           <img src="${photo.imageUrl}" alt="Photo from ${escapeHtml(photo.city || "")}" loading="lazy">
           <div class="photo-meta">
             <span>${escapeHtml(photo.uploader || "")}</span>
-            <button class="delete-photo-btn" onclick="deletePhoto('${doc.id}')" title="Delete photo">✕</button>
+            <button class="delete-photo-btn guest-hide" onclick="deletePhoto('${doc.id}')" title="Delete photo">✕</button>
           </div>
         `;
         gallery.appendChild(card);
@@ -1491,6 +1677,7 @@ function loadPhotosForCity(city) {
 }
 
 window.deletePhoto = function(photoId) {
+  if (guardAgainstGuest()) return;
   // Removes the photo from the shared gallery (Firestore). The file stays
   // in Cloudinary's library for now — deleting it there requires a signed
   // request, which we'll add as a small follow-up step if you want fully
@@ -1577,7 +1764,7 @@ function renderNotifications(snapshot) {
         <div>${escapeHtml(notif.message || "")}</div>
         <div class="notif-item-meta">${whenLabel}${dueLabel}</div>
       </div>
-      <button class="delete-notif-btn" onclick="deleteNotification('${doc.id}')" title="Remove">✕</button>
+      <button class="delete-notif-btn guest-hide" onclick="deleteNotification('${doc.id}')" title="Remove">✕</button>
     `;
     list.appendChild(li);
   });
@@ -1603,6 +1790,7 @@ function subscribeNotifications() {
 
 window.handleReminderSubmit = function(event) {
   event.preventDefault();
+  if (guardAgainstGuest()) return;
 
   const textInput = document.getElementById("reminder-text");
   const dueInput = document.getElementById("reminder-due");
@@ -1624,6 +1812,7 @@ window.handleReminderSubmit = function(event) {
 };
 
 window.deleteNotification = function(notifId) {
+  if (guardAgainstGuest()) return;
   db.collection("notifications").doc(notifId).delete().catch((err) => {
     console.error("Failed to delete notification:", err);
   });

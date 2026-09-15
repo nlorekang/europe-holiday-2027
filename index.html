@@ -288,6 +288,53 @@
       font-size: 0.8rem;
     }
     .notif-empty { text-align: center; opacity: 0.6; font-size: 0.82rem; padding: 16px 0; }
+
+    /* --- Auth loading screen (prevents login flash while session check runs) --- */
+    .auth-loading-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0c0c0c;
+      z-index: 9999;
+    }
+    .auth-loading-spinner {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.15);
+      border-top-color: #fff;
+      animation: auth-spin 0.8s linear infinite;
+    }
+    @keyframes auth-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* --- Guest access (read-only mode) --- */
+    .guest-banner {
+      background: rgba(255,196,0,0.12);
+      border-bottom: 1px solid rgba(255,196,0,0.3);
+      color: #ffd257;
+      font-size: 0.82rem;
+      text-align: center;
+      padding: 8px 12px;
+    }
+    body.guest-mode .guest-hide {
+      display: none !important;
+    }
+    #guest-links-list .guest-link-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      padding: 6px 0;
+    }
+    #guest-links-list .guest-link-status {
+      opacity: 0.7;
+      font-size: 0.72rem;
+    }
   </style>
 
   <!-- PWA: lets this install to a home screen as an app, with no app store -->
@@ -301,7 +348,11 @@
 </head>
 <body>
 
-  <div id="login-screen" class="login-screen-container">
+  <div id="auth-loading" class="auth-loading-screen">
+    <div class="auth-loading-spinner"></div>
+  </div>
+
+  <div id="login-screen" class="login-screen-container" style="display: none;">
     <form class="login-card" onsubmit="handleLoginSubmit(event)">
       <h2 class="login-title">EuroTrip 2027</h2>
       <p class="login-subtitle">Sign in to continue</p>
@@ -341,7 +392,11 @@
   </div>
 
   <div id="main-app-container" class="app-container">
-    
+
+    <div id="guest-banner" class="guest-banner" style="display:none;">
+      👀 You're viewing this trip as a guest (read-only) — <span id="guest-banner-expiry"></span>
+    </div>
+
     <aside class="app-sidebar">
       <div class="sidebar-header">
         <span class="logo-icon">✈️</span>
@@ -421,18 +476,37 @@
                 <h4>Notifications</h4>
               </div>
 
-              <form id="add-reminder-form" class="notif-add-form" onsubmit="handleReminderSubmit(event)">
+              <form id="add-reminder-form" class="notif-add-form guest-hide" onsubmit="handleReminderSubmit(event)">
                 <input type="text" id="reminder-text" placeholder="Add a reminder..." required>
                 <input type="date" id="reminder-due">
                 <button type="submit" title="Add reminder">+</button>
               </form>
 
-              <div class="push-enable-row">
+              <div class="push-enable-row guest-hide">
                 <button type="button" class="push-enable-btn" onclick="enablePushNotifications()">🔔 Enable push notifications on this device</button>
                 <span id="push-enable-status" class="push-enable-status"></span>
               </div>
 
               <ul class="notif-list" id="notif-list"></ul>
+            </div>
+          </div>
+
+          <div class="notif-wrapper guest-hide" id="guest-access-wrapper">
+            <button class="notif-bell-btn" id="guest-access-btn" onclick="toggleGuestPanel()" aria-label="Guest access" title="Guest access">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </button>
+
+            <div class="notif-panel" id="guest-access-panel">
+              <div class="notif-panel-header">
+                <h4>Guest Access</h4>
+              </div>
+
+              <div class="push-enable-row">
+                <button type="button" class="push-enable-btn" onclick="generateGuestLink()">+ Generate guest link</button>
+              </div>
+              <p class="notif-empty" style="padding-top: 8px;">Read-only. Each link starts a 24-hour timer the first time it's opened.</p>
+
+              <ul class="notif-list" id="guest-links-list"></ul>
             </div>
           </div>
 
@@ -645,7 +719,7 @@
             <div class="expenses-body">
               <div class="expense-form-panel">
                 <h3>🤝 Contributions</h3>
-                <form id="update-contributions-form" onsubmit="handleContributionsSubmit(event)">
+                <form id="update-contributions-form" class="guest-hide" onsubmit="handleContributionsSubmit(event)">
                   <div class="form-row">
                     <div class="form-group">
                       <label for="contrib-nthabi">Nthabi Contributed (R)</label>
@@ -664,7 +738,7 @@
 
                 <h3 style="margin-top: 28px;">💰 Log New Payment</h3>
                 <p class="form-hint">Nthabi pays for everything from the shared pool — just log what was spent.</p>
-                <form id="add-expense-form" onsubmit="handleExpenseSubmit(event)">
+                <form id="add-expense-form" class="guest-hide" onsubmit="handleExpenseSubmit(event)">
                   <div class="form-group">
                     <label for="exp-desc">Description</label>
                     <input type="text" id="exp-desc" placeholder="e.g. Louvre Tickets, Paris Airbnb" required>
@@ -690,7 +764,7 @@
               <div class="expense-ledger-panel">
                 <div class="ledger-header">
                   <h3>Expense Ledger</h3>
-                  <button class="clear-btn" id="btn-clear-expenses" onclick="clearExpenses()">Reset Ledger</button>
+                  <button class="clear-btn guest-hide" id="btn-clear-expenses" onclick="clearExpenses()">Reset Ledger</button>
                 </div>
                 <div class="ledger-list-wrapper">
                   <ul class="ledger-list" id="expense-ledger-list"></ul>
@@ -706,7 +780,7 @@
               <div class="expense-form-panel">
                 <h3>💬 Add a Note or Idea</h3>
                 <p class="form-hint">Anything you want to flag for the trip — a place to add, a change, a question for the other person.</p>
-                <form id="add-comment-form" onsubmit="handleCommentSubmit(event)">
+                <form id="add-comment-form" class="guest-hide" onsubmit="handleCommentSubmit(event)">
                   <div class="form-group">
                     <label for="comment-author">From</label>
                     <select id="comment-author" required>
@@ -748,7 +822,7 @@
                 <div class="expense-form-panel">
                   <h3>🏠 Add a Listing</h3>
                   <p class="form-hint">Drop in a candidate you've found — Booking.com, Airbnb, Vrbo, wherever.</p>
-                  <form id="add-accom-form" onsubmit="handleAccomSubmit(event)">
+                  <form id="add-accom-form" class="guest-hide" onsubmit="handleAccomSubmit(event)">
                     <div class="form-group">
                       <label for="accom-name">Listing name</label>
                       <input type="text" id="accom-name" placeholder="e.g. Cannaregio Canalside Apartment" required>
@@ -811,7 +885,7 @@
               <button class="city-chip" data-city="Rome">Rome</button>
             </div>
 
-            <div class="photo-upload-row">
+            <div class="photo-upload-row guest-hide">
               <select id="photo-uploader">
                 <option value="Nthabi">Nthabi</option>
                 <option value="Kevin">Kevin</option>
