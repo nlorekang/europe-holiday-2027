@@ -659,6 +659,8 @@ function startBackgroundSlideshow() {
 
 // --- TAB SWITCHER LOGIC ---
 window.switchTab = function(tabId) {
+  if (tabId === "tab-expenses" && isGuest()) return;
+
   document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
   document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
   
