@@ -4,6 +4,7 @@
   "private": true,
   "description": "Shared trip planner for the Europe sibling vacation, September-October 2027.",
   "dependencies": {
-    "firebase-admin": "^12.6.0"
+    "firebase-admin": "^12.6.0",
+    "@simplewebauthn/server": "^13.0.0"
   }
 }

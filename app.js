@@ -492,6 +492,111 @@ window.toggleGuestPanel = function() {
   if (panel) panel.classList.toggle("open");
 };
 
+// --- PASSKEY (FACE ID / FINGERPRINT) SIGN-IN ---
+// Lets someone sign in with a biometric instead of typing a password.
+// This is per-device: the first time on any given phone/laptop, you
+// still need your password once to register that device's fingerprint
+// via handleEnablePasskey(); after that, handlePasskeyLogin() works on
+// that device going forward. See api/webauthn-*.js for the server side.
+function passkeysSupported() {
+  return !!(window.PublicKeyCredential && window.SimpleWebAuthnBrowser);
+}
+
+window.handlePasskeyLogin = async function() {
+  const btn = document.getElementById("passkey-login-btn");
+  const errorEl = document.getElementById("login-error");
+  if (errorEl) errorEl.textContent = "";
+  if (btn) btn.disabled = true;
+
+  try {
+    const optsResp = await fetch("/api/webauthn-login-options", { method: "POST" });
+    const { options, flowId } = await optsResp.json();
+
+    const { startAuthentication } = window.SimpleWebAuthnBrowser;
+    const assertion = await startAuthentication({ optionsJSON: options });
+
+    const verifyResp = await fetch("/api/webauthn-login-verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ flowId, response: assertion })
+    });
+    const data = await verifyResp.json();
+
+    if (!verifyResp.ok) {
+      const messages = {
+        not_registered: "This device isn't set up for fingerprint sign-in yet — sign in with your password once to enable it.",
+        flow_expired: "That took too long — try again.",
+        verification_failed: "Couldn't verify that. Try again or use your password."
+      };
+      if (errorEl) errorEl.textContent = messages[data.error] || "Fingerprint sign-in failed.";
+      return;
+    }
+
+    await firebase.auth().signInWithCustomToken(data.token);
+  } catch (err) {
+    // Includes the user simply cancelling the biometric prompt — no
+    // need for a scary error in that case.
+    if (err && err.name !== "NotAllowedError" && errorEl) {
+      errorEl.textContent = "Fingerprint sign-in failed. Try again or use your password.";
+    }
+    console.error("Passkey login failed:", err);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+
+window.handleEnablePasskey = async function() {
+  if (guardAgainstGuest()) return;
+  if (!passkeysSupported()) {
+    alert("This browser or device doesn't support fingerprint/Face ID sign-in.");
+    return;
+  }
+
+  try {
+    const idToken = await firebase.auth().currentUser.getIdToken();
+    const optsResp = await fetch("/api/webauthn-register-options", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${idToken}` }
+    });
+    if (!optsResp.ok) throw new Error("Couldn't start registration");
+    const options = await optsResp.json();
+
+    const { startRegistration } = window.SimpleWebAuthnBrowser;
+    const attestation = await startRegistration({ optionsJSON: options });
+
+    const verifyResp = await fetch("/api/webauthn-register-verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`
+      },
+      body: JSON.stringify(attestation)
+    });
+    if (!verifyResp.ok) throw new Error("Couldn't verify registration");
+
+    localStorage.setItem(`passkey_enrolled_${firebase.auth().currentUser.uid}`, "1");
+    updatePasskeyButtons();
+    alert("Fingerprint sign-in is enabled on this device.");
+  } catch (err) {
+    if (err && err.name !== "NotAllowedError") {
+      alert("Couldn't enable fingerprint sign-in on this device. Try again.");
+    }
+    console.error("Passkey registration failed:", err);
+  }
+};
+
+function updatePasskeyButtons() {
+  const loginBtn = document.getElementById("passkey-login-btn");
+  if (loginBtn) loginBtn.style.display = passkeysSupported() ? "block" : "none";
+
+  const enableBtn = document.getElementById("enable-passkey-btn");
+  if (enableBtn) {
+    const user = firebase.auth().currentUser;
+    const alreadyEnrolled = user && localStorage.getItem(`passkey_enrolled_${user.uid}`) === "1";
+    enableBtn.style.display = (passkeysSupported() && !isGuest() && !alreadyEnrolled) ? "flex" : "none";
+  }
+}
+
 firebase.auth().onAuthStateChanged(async (user) => {
   const authLoading = document.getElementById("auth-loading");
   const loginScreen = document.getElementById("login-screen");
@@ -503,6 +608,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
     if (loginScreen) loginScreen.style.display = "none";
     if (landingPage) landingPage.style.display = "flex";
     applyGuestUI();
+    updatePasskeyButtons();
     attachRealtimeListeners();
     return;
   }
@@ -521,6 +627,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
   if (loginScreen) loginScreen.style.display = "flex";
   if (landingPage) landingPage.style.display = "none";
   if (mainApp) mainApp.style.display = "none";
+  updatePasskeyButtons();
 });
 
 window.handleLoginSubmit = function(event) {

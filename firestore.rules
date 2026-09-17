@@ -79,5 +79,19 @@ service cloud.firestore {
     match /deviceTokens/{docId} {
       allow read, write: if isRealUser();
     }
+
+    // Passkey (fingerprint/Face ID) credentials and in-flight WebAuthn
+    // challenges. These are only ever read/written by the /api/webauthn-*
+    // serverless functions using the Admin SDK, which bypasses these
+    // rules entirely — so this is a deliberate deny-all, not an oversight.
+    // No client (real user or guest) should ever read or write these
+    // directly, since they contain public keys and one-time challenges.
+    match /webauthnCredentials/{credentialId} {
+      allow read, write: if false;
+    }
+
+    match /webauthnChallenges/{flowId} {
+      allow read, write: if false;
+    }
   }
 }
